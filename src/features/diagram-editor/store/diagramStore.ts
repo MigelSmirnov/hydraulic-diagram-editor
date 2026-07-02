@@ -32,6 +32,10 @@ interface DiagramState {
   showGrid: boolean;
   snapToGrid: boolean;
 
+  // --- panel visibility (UI chrome, not persisted in the diagram) ---
+  showPalette: boolean;
+  showProperties: boolean;
+
   // --- React Flow bindings ---
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
@@ -53,6 +57,8 @@ interface DiagramState {
   deleteEdge: (edgeId: string) => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
+  togglePalette: () => void;
+  toggleProperties: () => void;
 }
 
 /**
@@ -67,6 +73,8 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   selectedLineType: DEFAULT_LINE_TYPE,
   showGrid: false,
   snapToGrid: false,
+  showPalette: true,
+  showProperties: true,
 
   onNodesChange: (changes) =>
     set({ nodes: applyNodeChanges(changes, get().nodes) as HNode[] }),
@@ -155,4 +163,6 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
     set({ edges: get().edges.filter((edge) => edge.id !== edgeId) }),
   toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
   toggleSnap: () => set((s) => ({ snapToGrid: !s.snapToGrid })),
+  togglePalette: () => set((s) => ({ showPalette: !s.showPalette })),
+  toggleProperties: () => set((s) => ({ showProperties: !s.showProperties })),
 }));

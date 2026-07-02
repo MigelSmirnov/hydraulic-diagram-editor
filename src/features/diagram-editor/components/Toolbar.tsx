@@ -22,9 +22,13 @@ export function Toolbar() {
   const edges = useDiagramStore((s) => s.edges);
   const showGrid = useDiagramStore((s) => s.showGrid);
   const snapToGrid = useDiagramStore((s) => s.snapToGrid);
+  const showPalette = useDiagramStore((s) => s.showPalette);
+  const showProperties = useDiagramStore((s) => s.showProperties);
   const selectedLineType = useDiagramStore((s) => s.selectedLineType);
   const toggleGrid = useDiagramStore((s) => s.toggleGrid);
   const toggleSnap = useDiagramStore((s) => s.toggleSnap);
+  const togglePalette = useDiagramStore((s) => s.togglePalette);
+  const toggleProperties = useDiagramStore((s) => s.toggleProperties);
   const clear = useDiagramStore((s) => s.clear);
   const loadTemplate = useDiagramStore((s) => s.loadTemplate);
   const replaceDiagram = useDiagramStore((s) => s.replaceDiagram);
@@ -73,6 +77,25 @@ export function Toolbar() {
       <div className="toolbar__brand">
         <span className="toolbar__logo" aria-hidden>≋</span>
         <span>Редактор гидравлических схем</span>
+      </div>
+
+      <div className="toolbar__group">
+        <button
+          className={`btn${showPalette ? ' btn--active' : ''}`}
+          onClick={togglePalette}
+          aria-pressed={showPalette}
+          title="Показать/скрыть панель элементов"
+        >
+          Элементы
+        </button>
+        <button
+          className={`btn${showProperties ? ' btn--active' : ''}`}
+          onClick={toggleProperties}
+          aria-pressed={showProperties}
+          title="Показать/скрыть панель свойств"
+        >
+          Свойства
+        </button>
       </div>
 
       <div className="toolbar__group">
