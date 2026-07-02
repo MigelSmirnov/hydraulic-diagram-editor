@@ -52,6 +52,7 @@ interface DiagramState {
   }) => void;
   setLineType: (id: LineTypeId) => void;
   updateEdgeLineType: (edgeId: string, lineType: LineTypeId) => void;
+  updateNodeLineType: (nodeId: string, lineType: LineTypeId) => void;
   rotateNode: (nodeId: string) => void;
   deleteNode: (nodeId: string) => void;
   deleteEdge: (edgeId: string) => void;
@@ -94,8 +95,13 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       ) as HEdge[],
     }),
 
-  addElement: (type, position) =>
-    set({ nodes: [...get().nodes, createNode(type, position)] }),
+  addElement: (type, position) => {
+    const node = createNode(type, position);
+    // Remember the active line type so colour-inheriting elements (e.g. the
+    // flow arrow) are tinted to match the pipes being drawn.
+    node.data.lineType = get().selectedLineType;
+    set({ nodes: [...get().nodes, node] });
+  },
 
   clear: () => set({ nodes: [], edges: [] }),
 
@@ -138,6 +144,14 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
         edge.id === edgeId
           ? { ...edge, data: { ...edge.data, lineType } }
           : edge,
+      ),
+    }),
+  updateNodeLineType: (nodeId, lineType) =>
+    set({
+      nodes: get().nodes.map((node) =>
+        node.id === nodeId
+          ? { ...node, data: { ...node.data, lineType } }
+          : node,
       ),
     }),
   rotateNode: (nodeId) =>

@@ -173,6 +173,15 @@ export const elementCatalog: HydraulicElementDef[] = [
     ],
   },
   {
+    type: 'flow-arrow',
+    label: 'Стрелка потока',
+    category: 'connections',
+    icon: 'flow-arrow',
+    defaultSize: { width: 40, height: 30 },
+    tintFromLineType: true,
+    ports: [],
+  },
+  {
     type: 'water-connection',
     label: 'Точка подключения воды',
     category: 'connections',

@@ -2,6 +2,7 @@ import { memo, useEffect, type CSSProperties, type MouseEvent } from 'react';
 import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
 import type { ElementPort, HandleId, HydraulicNodeData } from '../model/types';
 import { getElementDef } from '../model/elementCatalog';
+import { getLineTypeDef } from '../model/lineTypes';
 import { useDiagramStore } from '../store/diagramStore';
 import {
   getRotatedPortDirection,
@@ -87,6 +88,7 @@ function HydraulicNodeComponent({ id, data, selected }: NodeProps<HydraulicNodeD
           width: def.defaultSize.width,
           height: def.defaultSize.height,
           transform: `translate(-50%, -50%) rotate(${rotation}deg)`,
+          color: def.tintFromLineType ? getLineTypeDef(data.lineType).color : undefined,
         }}
       >
         {Icon ? <Icon /> : null}

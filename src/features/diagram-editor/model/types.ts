@@ -63,6 +63,11 @@ export interface SymbolDef {
   defaultSize: ElementSize;
   /** Connection ports in local symbol coordinates. */
   ports: ElementPort[];
+  /**
+   * When true, the symbol is tinted with its node's `lineType` colour instead
+   * of the default icon colour — used for annotations like the flow arrow.
+   */
+  tintFromLineType?: boolean;
 }
 
 /** Existing name kept for current editor code. */
@@ -74,6 +79,8 @@ export interface HydraulicNodeData {
   type: string;
   label: string;
   rotation?: number;
+  /** Line type whose colour tints the symbol (for `tintFromLineType` elements). */
+  lineType?: string;
 }
 
 /** All line types the editor knows about. */

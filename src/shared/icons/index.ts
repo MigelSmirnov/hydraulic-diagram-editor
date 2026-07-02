@@ -13,6 +13,7 @@ import { WaterMeterIcon } from './WaterMeterIcon';
 import { PressureGaugeIcon } from './PressureGaugeIcon';
 import { BalancingValveIcon } from './BalancingValveIcon';
 import { JunctionIcon } from './JunctionIcon';
+import { FlowArrowIcon } from './FlowArrowIcon';
 
 export type IconComponent = FC<SVGProps<SVGSVGElement>>;
 
@@ -35,6 +36,7 @@ export const iconRegistry: Record<string, IconComponent> = {
   'pressure-gauge': PressureGaugeIcon,
   'balancing-valve': BalancingValveIcon,
   'junction': JunctionIcon,
+  'flow-arrow': FlowArrowIcon,
 };
 
 export function getIcon(key: string): IconComponent | undefined {

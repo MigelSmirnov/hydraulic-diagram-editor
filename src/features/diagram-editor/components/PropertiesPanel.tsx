@@ -11,7 +11,10 @@ export function PropertiesPanel() {
   const node = useDiagramStore((s) => s.nodes.find((n) => n.selected));
   const edge = useDiagramStore((s) => s.edges.find((e) => e.selected));
   const updateEdgeLineType = useDiagramStore((s) => s.updateEdgeLineType);
+  const updateNodeLineType = useDiagramStore((s) => s.updateNodeLineType);
   const selectedEdgeLineType = getLineTypeDef(edge?.data?.lineType);
+  const nodeDef = node ? getElementDef(node.data.type) : undefined;
+  const nodeLineType = getLineTypeDef(node?.data.lineType);
 
   return (
     <aside className="properties">
@@ -29,8 +32,26 @@ export function PropertiesPanel() {
           <PropertyRow label="Название" value={node.data.label} />
           <PropertyRow
             label="Категория"
-            value={getElementDef(node.data.type)?.category ?? '—'}
+            value={nodeDef?.category ?? '—'}
           />
+          {nodeDef?.tintFromLineType && (
+            <PropertyRow
+              label="Цвет (тип линии)"
+              value={
+                <select
+                  className="property-select"
+                  value={nodeLineType.id}
+                  onChange={(event) => updateNodeLineType(node.id, event.target.value)}
+                >
+                  {lineTypes.map((lineType) => (
+                    <option key={lineType.id} value={lineType.id}>
+                      {lineType.label}
+                    </option>
+                  ))}
+                </select>
+              }
+            />
+          )}
         </div>
       )}
 
