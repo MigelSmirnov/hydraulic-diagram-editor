@@ -1,0 +1,105 @@
+project:
+  name: hydraulic-diagram-editor
+  purpose: Simple visual editor for domestic hydraulic schemes
+  stack:
+    - React
+    - TypeScript
+    - Vite
+    - React Flow
+  notes: No backend. Client-only prototype, designed to grow.
+
+domain_levels:
+  Symbol:
+    description: Single engineering element, such as a pump, valve, filter, boiler or expansion tank.
+    catalog: src/features/diagram-editor/model/elementCatalog.ts
+  AssemblyBlock:
+    description: Future Simulink-like block composed of internal symbols and edges with external ports.
+    catalog: src/features/diagram-editor/model/assemblyCatalog.ts
+  Template:
+    description: Ready-made diagram or diagram fragment that can be inserted into the canvas.
+    catalog: src/features/diagram-editor/model/templates.ts
+
+modules:
+  app:
+    path: src/app
+    responsibility: Application shell, global providers and layout composition
+    files:
+      App.tsx: Root component. Composes Toolbar + Palette + Canvas + PropertiesPanel.
+      providers/AppProviders.tsx: Global context providers (ReactFlowProvider, room for theme/i18n later).
+
+  features/diagram-editor:
+    path: src/features/diagram-editor
+    responsibility: Main feature for creating and editing hydraulic diagrams
+
+  features/diagram-editor/components:
+    path: src/features/diagram-editor/components
+    responsibility: React UI components for canvas, palette, toolbar and properties panel
+    files:
+      DiagramCanvas.tsx: Wraps <ReactFlow>. Wires store to the canvas, drag-drop of new elements, grid, snap, delete key.
+      Palette.tsx: Left panel. Lists catalog elements grouped by category; each item is draggable onto the canvas.
+      Toolbar.tsx: Top bar. Grid toggle, snap toggle, line-type selector, JSON save/load actions, line legend, clear canvas, load demo template.
+      PropertiesPanel.tsx: Right panel. Shows id / type / label of the currently selected node or edge; allows changing an edge line type through the line type catalog.
+
+  features/diagram-editor/nodes:
+    path: src/features/diagram-editor/nodes
+    responsibility: Custom React Flow node components and node type registration
+    files:
+      HydraulicNode.tsx: Single generic node. Renders an SVG engineering symbol, optional label and catalog-defined ports.
+      nodeTypes.ts: Maps React Flow node type keys to components ({ hydraulic: HydraulicNode }).
+
+  features/diagram-editor/edges:
+    path: src/features/diagram-editor/edges
+    responsibility: Custom React Flow edge components and edge type registration
+    files:
+      HydraulicEdge.tsx: Hydraulic pipe edge. Builds port-to-stub-to-orthogonal-route paths, styles itself from its line type, and shows an inline delete button when selected.
+      edgeTypes.ts: Maps React Flow edge type keys to components ({ hydraulic: HydraulicEdge }).
+
+  features/diagram-editor/model:
+    path: src/features/diagram-editor/model
+    responsibility: TypeScript domain model, element catalog, line types and templates
+    files:
+      types.ts: All domain types (symbols, assembly blocks, ports, line types, templates, node/edge data).
+      diagramDocument.ts: JSON document format, schema version and basic document validation.
+      elementCatalog.ts: Catalog of single engineering symbols and their connection ports.
+      assemblyCatalog.ts: Future catalog of assembly blocks with external ports and internal diagrams.
+      lineTypes.ts: Catalog of line, pipe and cable types.
+      templates.ts: Predefined diagrams.
+
+  features/diagram-editor/store:
+    path: src/features/diagram-editor/store
+    responsibility: State management for nodes, edges, selected line type and editor settings
+    files:
+      diagramStore.ts: Zustand store. nodes, edges, selectedLineType, showGrid, snapToGrid + all mutations (add/rotate/delete node, delete edge, connect, line type, template/document load).
+
+  features/diagram-editor/utils:
+    path: src/features/diagram-editor/utils
+    responsibility: Feature helpers for React Flow structures and diagram file import/export
+    files:
+      createNode.ts: Builds a React Flow node from a catalog element type + position.
+      diagramJson.ts: Serializes, deserializes, downloads and reads DiagramDocument JSON files.
+      edgeRouting.ts: Builds simple orthogonal pipe paths from rotated port directions.
+      portGeometry.ts: Computes rotated symbol sizes and rendered port coordinates from symbol-local ports.
+
+  shared/ui:
+    path: src/shared/ui
+    responsibility: Reusable UI components not tied to hydraulic logic
+    files:
+      PropertyRow.tsx: Generic label/value row used by the properties panel.
+
+  shared/icons:
+    path: src/shared/icons
+    responsibility: SVG icons and symbols for hydraulic elements
+    files:
+      "*Icon.tsx": SVG components for element icons.
+      index.ts: iconRegistry mapping catalog icon keys to components.
+
+  lib:
+    path: src/lib
+    responsibility: Framework-agnostic low-level helpers
+    files:
+      id.ts: Unique id generator for nodes/edges.
+
+docs:
+  invariants: docs/invariants.md
+  roadmap: docs/roadmap.md
+  adding_elements: docs/adding-elements.md

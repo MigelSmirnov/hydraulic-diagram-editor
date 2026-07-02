@@ -1,0 +1,37 @@
+# Architecture Invariants
+
+- `App.tsx` is an application shell. It composes the editor layout and should not contain hydraulic domain logic.
+- Single engineering symbols are stored in `src/features/diagram-editor/model/elementCatalog.ts`.
+- Future assembly blocks are stored in `src/features/diagram-editor/model/assemblyCatalog.ts`.
+- Diagram templates and reusable diagram fragments are stored in `src/features/diagram-editor/model/templates.ts`.
+- Diagrams are saved and loaded as `DiagramDocument` from `src/features/diagram-editor/model/diagramDocument.ts`.
+- The JSON document format must include a required schema version.
+- UI components must not manually assemble or parse diagram JSON.
+- JSON import must run basic document structure validation before replacing editor state.
+- An assembly block must not be represented as a flat image only; it has external ports and an internal diagram structure.
+- Assembly blocks should be designed so they can later be expanded and their internal diagram edited.
+- Nodes must not be styled as visual cards or flowchart blocks.
+- A hydraulic element is rendered as an SVG engineering symbol with connection ports.
+- Element connection ports are described only in `src/features/diagram-editor/model/elementCatalog.ts`.
+- Inline flow-through fittings share one horizontal pipe axis so runs stay straight: box height `74` with left/right ports at `y = 37`. See `docs/adding-elements.md`.
+- Ports are defined in symbol-local coordinates.
+- Port direction is part of symbol port geometry.
+- Rendered handles must use transformed coordinates from `src/features/diagram-editor/utils/portGeometry.ts`.
+- A connection handle must be centered on its port point on every side. React Flow's per-position handle classes only center on one axis, so `.hydraulic-handle` must force `transform: translate(-50%, -50%)`; otherwise the handle center (and the edge endpoint React Flow derives from it) drifts half a handle away from the port.
+- Rotation transforms both port position and port direction.
+- Node rotation is part of node data.
+- Edges connect to logical ports, not to visual containers.
+- Visual SVG rotation and handle positions must stay synchronized.
+- `HydraulicEdge` must not use standard flowchart edge geometry.
+- Edge paths are built as pipe routes: port -> stub -> orthogonal route -> stub -> port.
+- UI components must not know the concrete ports of concrete elements.
+- New line, pipe and cable types are added through `src/features/diagram-editor/model/lineTypes.ts`.
+- Line type structure is defined by `LineTypeDef` in `src/features/diagram-editor/model/types.ts`.
+- UI components must not hardcode line type ids, labels, categories or visual styles.
+- Line visual styling is resolved from `lineTypes.ts`, not embedded in React components.
+- New templates are added through `src/features/diagram-editor/model/templates.ts`.
+- React Flow specific code stays inside `src/features/diagram-editor`.
+- SVG icons stay isolated from business logic in `src/shared/icons`.
+- Components should stay small and focused.
+- Prefer typed configuration over repeated hardcoded JSX.
+- Editor state lives in `diagramStore`; components read and mutate it through store actions.
