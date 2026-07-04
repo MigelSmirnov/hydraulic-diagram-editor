@@ -9,6 +9,7 @@ import {
   connectPortsInDiagram,
   createDiagramFile,
   readDiagramFile,
+  updateElementInDiagram,
   validateDiagramFile,
 } from './diagramFile';
 import { renderDiagramPng } from './renderPng';
@@ -27,6 +28,8 @@ function textJson(value: unknown) {
 const diagramPathSchema = {
   diagramPath: z.string().optional().describe('Path inside the project root. Defaults to HYDRAULIC_DIAGRAM_FILE or hydraulic-diagram.agent.json.'),
 };
+
+const rotationSchema = z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]);
 
 const server = new McpServer({
   name: 'hydraulic-diagram-editor',
@@ -77,11 +80,29 @@ server.registerTool(
       y: z.number().describe('Node y position on the canvas.'),
       id: z.string().optional().describe('Optional explicit node id.'),
       label: z.string().optional().describe('Optional label override.'),
-      rotation: z.union([z.literal(0), z.literal(90), z.literal(180), z.literal(270)]).optional(),
+      rotation: rotationSchema.optional(),
       lineType: z.string().optional().describe('Optional line type used to tint elements that support line tinting.'),
     },
   },
   async (input) => textJson(await addElementToDiagram(input)),
+);
+
+server.registerTool(
+  'hydraulic_update_element',
+  {
+    title: 'Update hydraulic element',
+    description: 'Update an existing diagram element position, label, rotation or line tint.',
+    inputSchema: {
+      ...diagramPathSchema,
+      nodeId: z.string().describe('Existing node id to update.'),
+      x: z.number().optional().describe('New node x position. Omit to keep the current x.'),
+      y: z.number().optional().describe('New node y position. Omit to keep the current y.'),
+      label: z.string().optional().describe('New label. Omit to keep the current label.'),
+      rotation: rotationSchema.optional().describe('New rotation in degrees. Omit to keep the current rotation.'),
+      lineType: z.string().optional().describe('New line type used to tint elements that support line tinting. Omit to keep the current tint.'),
+    },
+  },
+  async (input) => textJson(await updateElementInDiagram(input)),
 );
 
 server.registerTool(
