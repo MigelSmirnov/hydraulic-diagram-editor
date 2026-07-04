@@ -106,6 +106,17 @@ export const elementCatalog: HydraulicElementDef[] = [
     ],
   },
   {
+    type: 'flange',
+    label: 'Фланец',
+    category: 'valves',
+    icon: 'flange',
+    defaultSize: { width: 74, height: 74 },
+    ports: [
+      { id: 'inlet', label: 'Вход', side: 'left', direction: 'left', x: 0, y: 37, kind: 'inlet' },
+      { id: 'outlet', label: 'Выход', side: 'right', direction: 'right', x: 74, y: 37, kind: 'outlet' },
+    ],
+  },
+  {
     type: 'balancing-valve',
     label: 'Балансировочный вентиль',
     category: 'valves',
