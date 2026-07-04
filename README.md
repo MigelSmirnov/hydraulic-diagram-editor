@@ -30,7 +30,8 @@ MCP-сервер для агентского редактирования JSON-�
 npm run mcp
 ```
 
-Подробнее: [`docs/mcp.md`](docs/mcp.md). Пример схемы, созданной в агентском
+Подробнее: [`docs/mcp.md`](docs/mcp.md). Готовые промпты для проверки MCP:
+[`docs/agent-prompts.md`](docs/agent-prompts.md). Пример схемы, созданной в агентском
 формате: [`examples/mcp/boiler-agent-diagram.json`](examples/mcp/boiler-agent-diagram.json).
 Для PNG-рендера через MCP установи браузер Playwright один раз:
 
@@ -118,6 +119,7 @@ docs/
   architecture.yaml              Зоны ответственности модулей + правила + roadmap
   adding-elements.md             Правила добавления элементов
   mcp.md                         Запуск и tools MCP-сервера
+  agent-prompts.md               Готовые промпты для проверки MCP-агента
   invariants.md                  Архитектурные инварианты
   skill-compliance-plan.md       План соответствия skills
 examples/
