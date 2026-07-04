@@ -1,0 +1,141 @@
+{
+  "schemaVersion": 1,
+  "nodes": [
+    {
+      "id": "agent-water-1",
+      "type": "hydraulic",
+      "position": { "x": 40, "y": 360 },
+      "data": {
+        "type": "water-connection",
+        "label": "Точка подключения воды",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-filter-1",
+      "type": "hydraulic",
+      "position": { "x": 180, "y": 365 },
+      "data": {
+        "type": "filter",
+        "label": "Фильтр",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-valve-1",
+      "type": "hydraulic",
+      "position": { "x": 320, "y": 365 },
+      "data": {
+        "type": "ball-valve",
+        "label": "Шаровой кран",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-flange-1",
+      "type": "hydraulic",
+      "position": { "x": 450, "y": 365 },
+      "data": {
+        "type": "flange",
+        "label": "Фланец",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-boiler-1",
+      "type": "hydraulic",
+      "position": { "x": 620, "y": 260 },
+      "data": {
+        "type": "indirect-boiler",
+        "label": "Бойлер косвенного нагрева",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-solar-1",
+      "type": "hydraulic",
+      "position": { "x": 430, "y": 40 },
+      "data": {
+        "type": "solar-collector",
+        "label": "Солнечный коллектор",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "agent-pump-1",
+      "type": "hydraulic",
+      "position": { "x": 456, "y": 190 },
+      "data": {
+        "type": "circulation-pump",
+        "label": "Циркуляционный насос",
+        "rotation": 0
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "agent-edge-water-filter",
+      "source": "agent-water-1",
+      "sourceHandle": "outlet",
+      "target": "agent-filter-1",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_cold_water" }
+    },
+    {
+      "id": "agent-edge-filter-valve",
+      "source": "agent-filter-1",
+      "sourceHandle": "outlet",
+      "target": "agent-valve-1",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_cold_water" }
+    },
+    {
+      "id": "agent-edge-valve-flange",
+      "source": "agent-valve-1",
+      "sourceHandle": "outlet",
+      "target": "agent-flange-1",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_cold_water" }
+    },
+    {
+      "id": "agent-edge-flange-boiler",
+      "source": "agent-flange-1",
+      "sourceHandle": "outlet",
+      "target": "agent-boiler-1",
+      "targetHandle": "cold_in",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_cold_water" }
+    },
+    {
+      "id": "agent-edge-solar-pump",
+      "source": "agent-solar-1",
+      "sourceHandle": "solar_supply",
+      "target": "agent-pump-1",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "agent-edge-pump-boiler",
+      "source": "agent-pump-1",
+      "sourceHandle": "outlet",
+      "target": "agent-boiler-1",
+      "targetHandle": "solar_supply",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    }
+  ],
+  "viewport": {
+    "x": 0,
+    "y": 0,
+    "zoom": 1
+  },
+  "settings": {
+    "showGrid": false,
+    "snapToGrid": false,
+    "activeLineType": "pipe_cold_water"
+  }
+}

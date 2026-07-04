@@ -5,21 +5,26 @@
   "type": "module",
   "scripts": {
     "dev": "vite",
+    "mcp": "tsx src/mcp/server.ts",
     "build": "tsc && vite build",
     "test": "vitest run",
     "preview": "vite preview"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "html-to-image": "^1.11.11",
     "react": "^18.3.1",
     "react-dom": "^18.3.1",
     "reactflow": "^11.11.4",
+    "zod": "^4.4.3",
     "zustand": "^4.5.4"
   },
   "devDependencies": {
+    "@types/node": "^20.19.43",
     "@types/react": "^18.3.3",
     "@types/react-dom": "^18.3.0",
     "@vitejs/plugin-react": "^4.3.1",
+    "tsx": "^4.23.0",
     "typescript": "^5.5.3",
     "vite": "^5.4.0",
     "vitest": "^3.2.6"

@@ -24,6 +24,15 @@ npm run build      # проверка типов + сборка в dist/
 npm run preview    # локальный просмотр собранной версии
 ```
 
+MCP-сервер для агентского редактирования JSON-схем:
+
+```bash
+npm run mcp
+```
+
+Подробнее: [`docs/mcp.md`](docs/mcp.md). Пример схемы, созданной в агентском
+формате: [`examples/mcp/boiler-agent-diagram.json`](examples/mcp/boiler-agent-diagram.json).
+
 Требуется Node.js 18+.
 
 ### Что уже умеет
@@ -97,11 +106,17 @@ src/
     icons/index.ts               Реестр иконок
   lib/
     id.ts                        Генератор уникальных id
+  mcp/
+    diagramFile.ts               Файловые команды MCP для JSON-схем
+    server.ts                    stdio MCP-сервер
 docs/
   architecture.yaml              Зоны ответственности модулей + правила + roadmap
   adding-elements.md             Правила добавления элементов
+  mcp.md                         Запуск и tools MCP-сервера
   invariants.md                  Архитектурные инварианты
   skill-compliance-plan.md       План соответствия skills
+examples/
+  mcp/boiler-agent-diagram.json  Пример схемы для Load JSON / MCP
 architecture/
   app-architecture.yaml          Машинно-читаемый граф модулей
 tests/
