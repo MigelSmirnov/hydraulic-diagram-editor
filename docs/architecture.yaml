@@ -35,6 +35,7 @@ modules:
     path: src/features/diagram-editor/components
     responsibility: React UI components for canvas, palette, toolbar and properties panel
     files:
+      DiagramAutosave.tsx: Restores a validated localStorage autosave on startup and debounces diagram autosave after state changes.
       DiagramCanvas.tsx: Wraps <ReactFlow>. Wires store to the canvas, drag-drop of new elements, CAD-style short right-click repeat placement, grid, snap, delete key.
       Palette.tsx: Left panel. Lists catalog elements grouped by category; each item is draggable onto the canvas.
       Toolbar.tsx: Top bar. Grid toggle, snap toggle, line-type selector, JSON save/load actions, PNG export, line legend, clear canvas, load demo template.
@@ -71,6 +72,7 @@ modules:
     responsibility: Editable diagram JSON persistence and browser file adapters
     files:
       diagramJson.ts: Serializes, deserializes, downloads and reads DiagramDocument JSON files. Deserialization validates structure and domain invariants before state replacement.
+      diagramAutosave.ts: Stores and restores validated DiagramDocument autosave data in localStorage.
       index.ts: Public boundary for persistence imports.
 
   features/diagram-editor/export:
@@ -84,7 +86,7 @@ modules:
     path: src/features/diagram-editor/store
     responsibility: State management for nodes, edges, selected line type and editor settings
     files:
-      diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, lastElementType, showGrid, snapToGrid + React Flow bindings and UI-facing actions.
+      diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, lastElementType, showGrid, snapToGrid + React Flow bindings and UI-facing actions. Provides restore without undo history pollution for autosave startup.
       diagramCommands.ts: Pure command functions for add/connect/rotate/delete/update/load/replace behavior. This is the foundation for undo/redo.
       diagramHistory.ts: Pure undo/redo stack helpers for diagram data snapshots. Drag move history is recorded through a checkpoint before React Flow position changes.
 

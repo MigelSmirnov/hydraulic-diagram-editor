@@ -3,6 +3,7 @@ import { SolarCollectorIcon } from './SolarCollectorIcon';
 import { BoilerIcon } from './BoilerIcon';
 import { ExpansionTankIcon } from './ExpansionTankIcon';
 import { PumpIcon } from './PumpIcon';
+import { VerticalPumpIcon } from './VerticalPumpIcon';
 import { BallValveIcon } from './BallValveIcon';
 import { FilterIcon } from './FilterIcon';
 import { WaterConnectionIcon } from './WaterConnectionIcon';
@@ -26,6 +27,7 @@ export const iconRegistry: Record<string, IconComponent> = {
   'boiler': BoilerIcon,
   'expansion-tank': ExpansionTankIcon,
   'pump': PumpIcon,
+  'vertical-pump': VerticalPumpIcon,
   'ball-valve': BallValveIcon,
   'filter': FilterIcon,
   'water-connection': WaterConnectionIcon,

@@ -72,6 +72,17 @@ export const elementCatalog: HydraulicElementDef[] = [
     ],
   },
   {
+    type: 'pump',
+    label: 'Насос',
+    category: 'pumps',
+    icon: 'vertical-pump',
+    defaultSize: { width: 58, height: 74 },
+    ports: [
+      { id: 'inlet', label: 'Вход', side: 'bottom', direction: 'bottom', x: 29, y: 74, kind: 'inlet' },
+      { id: 'outlet', label: 'Выход', side: 'top', direction: 'top', x: 29, y: 0, kind: 'outlet' },
+    ],
+  },
+  {
     type: 'ball-valve',
     label: 'Шаровой кран',
     category: 'valves',

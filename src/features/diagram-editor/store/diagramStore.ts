@@ -71,6 +71,11 @@ interface DiagramState {
     edges: HEdge[];
     settings?: DiagramDocumentSettings;
   }) => void;
+  restoreDiagram: (input: {
+    nodes: HNode[];
+    edges: HEdge[];
+    settings?: DiagramDocumentSettings;
+  }) => void;
   setLineType: (id: LineTypeId) => void;
   updateEdgeLineType: (edgeId: string, lineType: LineTypeId) => void;
   updateNodeLineType: (nodeId: string, lineType: LineTypeId) => void;
@@ -161,6 +166,20 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
         ),
       }),
     ),
+
+  restoreDiagram: ({ nodes, edges, settings }) =>
+    set((state) => ({
+      ...replaceDiagramCommand(
+        {
+          selectedLineType: state.selectedLineType,
+          showGrid: state.showGrid,
+          snapToGrid: state.snapToGrid,
+        },
+        { nodes, edges, settings },
+      ),
+      past: [],
+      future: [],
+    })),
 
   setLineType: (id) => set({ selectedLineType: resolveLineTypeCommand(id) }),
   updateEdgeLineType: (edgeId, lineType) =>

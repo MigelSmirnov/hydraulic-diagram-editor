@@ -3,6 +3,7 @@ import { Toolbar } from '@/features/diagram-editor/components/Toolbar';
 import { Palette } from '@/features/diagram-editor/components/Palette';
 import { DiagramCanvas } from '@/features/diagram-editor/components/DiagramCanvas';
 import { PropertiesPanel } from '@/features/diagram-editor/components/PropertiesPanel';
+import { DiagramAutosave } from '@/features/diagram-editor/components/DiagramAutosave';
 import { useDiagramStore } from '@/features/diagram-editor/store/diagramStore';
 
 /**
@@ -26,6 +27,7 @@ export default function App() {
 
   return (
     <AppProviders>
+      <DiagramAutosave />
       <div className="app-shell">
         <Toolbar />
         <div className="app-body" style={{ gridTemplateColumns }}>

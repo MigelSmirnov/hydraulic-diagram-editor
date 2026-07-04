@@ -28,6 +28,7 @@ This plan tracks the work needed to align the editor with the
 - Add unit tests for port rotation and orthogonal routing.
 - Add document validation for node/edge references, element types, handles, line types and rotation.
 - Run validation before replacing editor state from imported JSON.
+- Add local autosave/restore so development refreshes and HMR do not erase the current diagram.
 
 Status: done.
 

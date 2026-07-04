@@ -172,12 +172,15 @@ modules:
       - diagram JSON deserialization
       - schema version checks
       - import validation before state replacement
+      - localStorage autosave
       - browser download/read adapters
     exposes:
       - serializeDiagram
       - deserializeDiagram
       - downloadDiagramJson
       - readDiagramJsonFile
+      - loadAutosaveDocument
+      - saveAutosaveDocument
     depends_on:
       - diagram-domain-model
       - diagram-invariants
@@ -202,6 +205,7 @@ modules:
       - autosave adapter
       - cloud storage adapter
       - clean domain-model save format
+      - autosave conflict recovery
     invariant_files:
       - src/features/diagram-editor/model/diagramValidation.ts
     config_files:

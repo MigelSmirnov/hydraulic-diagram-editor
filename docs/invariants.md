@@ -7,6 +7,7 @@
 - Diagrams are saved and loaded as `DiagramDocument` from `src/features/diagram-editor/model/diagramDocument.ts`.
 - Diagram JSON persistence lives behind `src/features/diagram-editor/persistence/index.ts`.
 - Diagram image export lives behind `src/features/diagram-editor/export/index.ts` and must stay separate from editable JSON persistence.
+- Diagram autosave lives behind `src/features/diagram-editor/persistence/diagramAutosave.ts`, uses the same `DiagramDocument` format, and must validate before restore.
 - Imported JSON must pass executable validation from `src/features/diagram-editor/model/diagramValidation.ts` before replacing editor state.
 - The JSON document format must include a required schema version.
 - UI components must not manually assemble or parse diagram JSON.
@@ -40,6 +41,7 @@
 - Editor state lives in `diagramStore`; components read and mutate it through store actions.
 - Durable diagram mutations should be expressed through pure command functions in `src/features/diagram-editor/store/diagramCommands.ts` so they can be tested and later wrapped by undo/redo.
 - Undo/redo history stores durable diagram data snapshots (`nodes`, `edges`) and must not store transient UI chrome such as open panels, hover state or file input state.
+- Autosave restores durable diagram data without pushing an undo/redo history checkpoint.
 - Drag movement history must be committed once at drag start, not on every React Flow position change.
 - Short right-click on empty canvas repeats the last element placement command.
 - Long right-click on a node uses a 250 ms threshold and opens the node action menu.
