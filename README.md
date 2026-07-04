@@ -1,9 +1,10 @@
 # Редактор гидравлических схем
 
-Минимальный визуальный редактор простых бытовых гидравлических схем.
-Первая версия: полотно, палитра элементов, соединения, свойства.
+Визуальный редактор простых бытовых гидравлических схем.
+Текущая версия: полотно, палитра элементов, портовые соединения, свойства,
+JSON save/load, autosave, PNG export и CAD-style быстрые действия.
 
-**Стек:** React · TypeScript · Vite · React Flow · Zustand · без backend.
+**Стек:** React · TypeScript · Vite · React Flow · Zustand · html-to-image · без backend.
 
 ---
 
@@ -28,14 +29,21 @@ npm run preview    # локальный просмотр собранной ве
 ### Что уже умеет
 
 - Добавление элементов перетаскиванием из палитры на полотно.
+- Короткий **ПКМ** по пустому полотну повторяет добавление последнего элемента.
+- Длинный **ПКМ** по элементу открывает меню действий: повернуть / удалить.
 - Перемещение и масштабирование элементов.
 - Соединение элементов линиями (тянуть от точки подключения к точке).
-  Точки есть с 4 сторон; направление не важно (`ConnectionMode.Loose`).
+  Точки подключения задаются в каталоге элементов; направление соединения свободное
+  (`ConnectionMode.Loose`).
 - Удаление выбранного элемента или линии клавишей **Delete** / **Backspace**.
 - Сетка — отключаемая, **по умолчанию выключена** (кнопка «Показать сетку»).
 - Привязка к сетке — вкл/выкл.
+- Undo / redo для командных действий и перемещения drag'ом.
 - Очистка полотна и загрузка демо-шаблона.
-- Панель свойств: id / тип / название выбранного элемента или линии.
+- Save / Load JSON.
+- Autosave в `localStorage`, чтобы refresh/HMR/dev-server restart не стирали схему.
+- Export PNG.
+- Панель свойств: id / тип / название выбранного элемента или линии; смена типа линии.
 
 ---
 
@@ -50,25 +58,39 @@ src/
     providers/AppProviders.tsx  Глобальные провайдеры (ReactFlowProvider)
   features/diagram-editor/
     components/
-      DiagramCanvas.tsx          <ReactFlow>, drag-drop, сетка, привязка, Delete
+      DiagramAutosave.tsx        restore/save autosave через localStorage
+      DiagramCanvas.tsx          <ReactFlow>, drag-drop, ПКМ repeat, сетка, привязка, Delete
       Palette.tsx                Левая палитра элементов (draggable)
-      Toolbar.tsx                Верхняя панель: сетка, привязка, тип линии, очистка, демо
-      PropertiesPanel.tsx        Правая панель свойств (только чтение)
+      Toolbar.tsx                Верхняя панель: сетка, JSON, PNG export, undo/redo, демо
+      PropertiesPanel.tsx        Правая панель свойств
     nodes/
-      HydraulicNode.tsx          Единый узел для всех элементов (иконка + подпись + 4 точки)
+      HydraulicNode.tsx          Единый узел для всех элементов + long-ПКМ action menu
       nodeTypes.ts               Реестр типов узлов React Flow
     edges/
       HydraulicEdge.tsx          Ортогональная линия, цвет/стиль из типа линии
       edgeTypes.ts               Реестр типов линий React Flow
+    export/
+      exportPng.ts               Экспорт текущей схемы в PNG
+      index.ts                   Публичная граница export-модуля
     model/
       types.ts                   Все доменные типы
       elementCatalog.ts          ⬅ ИСТОЧНИК ПРАВДЫ по элементам
       lineTypes.ts               ⬅ ИСТОЧНИК ПРАВДЫ по типам линий
       templates.ts               ⬅ ИСТОЧНИК ПРАВДЫ по шаблонам
+      diagramDocument.ts         JSON-формат схемы + schemaVersion
+      diagramValidation.ts       Проверка загружаемой схемы
+    persistence/
+      diagramJson.ts             Save/load JSON
+      diagramAutosave.ts         Autosave/restore localStorage
+      index.ts                   Публичная граница persistence-модуля
     store/
-      diagramStore.ts            Zustand-хранилище: nodes, edges, настройки
+      diagramStore.ts            Zustand-хранилище: nodes, edges, настройки, undo/redo
+      diagramCommands.ts         Тестируемые команды редактора
+      diagramHistory.ts          Undo/redo snapshots
     utils/
       createNode.ts              Элемент каталога → узел React Flow
+      edgeRouting.ts             Ортогональная маршрутизация линий
+      portGeometry.ts            Поворот портов и размеров символа
   shared/
     ui/PropertyRow.tsx           Переиспользуемая строка «label / value»
     icons/*Icon.tsx              Чистые SVG-иконки (без бизнес-логики)
@@ -77,6 +99,13 @@ src/
     id.ts                        Генератор уникальных id
 docs/
   architecture.yaml              Зоны ответственности модулей + правила + roadmap
+  adding-elements.md             Правила добавления элементов
+  invariants.md                  Архитектурные инварианты
+  skill-compliance-plan.md       План соответствия skills
+architecture/
+  app-architecture.yaml          Машинно-читаемый граф модулей
+tests/
+  diagram-editor/*.test.ts       Unit-тесты команд, геометрии, validation, autosave
 ```
 
 Ключевое правило архитектуры: **вся логика редактора живёт в `features/diagram-editor`
@@ -99,25 +128,37 @@ docs/
      category: 'valves',            // одна из categories
      icon: 'my-thing',              // ключ из реестра иконок
      defaultSize: { width: 72, height: 72 },
-     handles: ['top', 'right', 'bottom', 'left'],
+     ports: [
+       { id: 'inlet', label: 'Вход', side: 'left', direction: 'left', x: 0, y: 36, kind: 'inlet' },
+       { id: 'outlet', label: 'Выход', side: 'right', direction: 'right', x: 72, y: 36, kind: 'outlet' },
+     ],
    }
    ```
 
 Всё. Палитра, узел на полотне и панель свойств подхватят элемент автоматически —
 новый компонент писать не нужно.
 
+Подробные правила по SVG, портам и общей оси фитингов — в
+[`docs/adding-elements.md`](docs/adding-elements.md).
+
 ---
 
 ## 4. Как добавить новый тип линии
 
-1. В `src/features/diagram-editor/model/lineTypes.ts` добавь (или включи) запись:
+1. В `src/features/diagram-editor/model/lineTypes.ts` добавь запись:
    ```ts
-   { id: 'hw', label: 'ГВС', color: '#dc2626', strokeWidth: 2, dashed: false, enabled: true },
+   {
+     id: 'pipe_example',
+     label: 'Пример',
+     category: 'water',
+     visualStyle: 'solid',
+     color: '#dc2626',
+     strokeWidth: 2,
+     description: 'Описание линии.',
+   },
    ```
-   Многие типы уже объявлены (ХВС, ГВС, рециркуляция, солнечный контур, дренаж,
-   управляющий кабель) — они просто стоят с `enabled: false`. Включение —
-   это смена одного флага на `true`.
-2. Добавь новый `id` в `LineTypeId` в `types.ts`, если тип новый.
+2. Если порт должен принимать только конкретные линии, укажи `allowedLineTypes`
+   в `elementCatalog.ts`.
 
 Линия рисуется единым `HydraulicEdge`, который берёт цвет/толщину/пунктир из типа —
 менять код рендера не нужно.
@@ -128,15 +169,13 @@ docs/
 
 ## 5. Следующие шаги (рекомендованный порядок)
 
-1. **Включить типы линий** — по мере надобности переключать `enabled` в `lineTypes.ts`.
-2. **Редактируемые свойства** — переименование элемента и смена типа линии прямо
-   в `PropertiesPanel` (запись обратно в store).
-3. **Сохранение/загрузка JSON** — сериализация `{ nodes, edges }` в localStorage / файл.
-4. **Экспорт PNG / SVG** — через `react-flow` + `html-to-image`.
-5. **Проверка схемы** — правила допустимых соединений, обязательные элементы.
-6. **Расширение домена** — ГВС, солнечный контур, водоочистка: новые категории
+1. **Редактируемые свойства** — переименование элемента прямо в `PropertiesPanel`.
+2. **Проверка схемы** — правила допустимых соединений, обязательные элементы.
+3. **Экспорт SVG / PDF** — PNG уже реализован.
+4. **Расширение домена** — ГВС, солнечный контур, водоочистка: новые категории
    в `elementCatalog.ts` и типы линий в `lineTypes.ts`, без переписывания ядра.
-7. **Undo/redo** — история изменений store (добавить провайдер в `AppProviders`).
+5. **Чистая доменная модель** — постепенно отделить durable diagram model от React Flow `Node`/`Edge`.
+6. **Ограничение истории** — лимит undo/redo snapshots.
 
-Осознанно **не** вошло в первую версию: экспорт, сохранение/загрузка, расчёты,
-проверки, водоочистка, backend, авторизация.
+Осознанно **не** входит сейчас: расчёты, полноценная проверка схемы,
+водоочистка как отдельный доменный блок, backend, авторизация.
