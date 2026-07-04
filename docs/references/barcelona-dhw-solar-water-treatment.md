@@ -177,7 +177,7 @@ Sources to find / add later:
 
 Diagram impact:
 
-- For now, draw water treatment as a functional block or available catalog component.
+- Draw water treatment as the dedicated `water-treatment-unit` catalog element.
 - Add bypass / isolation concept around the water-treatment block if possible.
 - Exclude the water meter from the diagram because it is outside project scope.
 
@@ -189,6 +189,7 @@ Current pushed catalog findings:
 
 - `water-connection` — cold-water connection point.
 - `filter` — available in category `treatment`; has inlet, outlet and drain ports.
+- `water-treatment-unit` — dedicated serviceable water-treatment block; has cold-water inlet/outlet and drain ports.
 - `pressure-reducer` — available valve for cold water.
 - `water-meter` — available, but out of scope for this project.
 - `indirect-boiler` — available; currently has cold inlet, hot outlet, solar coil ports and drain.
@@ -202,7 +203,6 @@ Potential catalog gaps for this project:
 
 - Dedicated DHW supply manifold, 1 inlet + 3 outlets.
 - Dedicated DHW recirculation manifold, 3 inlets + 1 outlet.
-- Dedicated water-treatment block if we do not want to represent treatment only as a filter.
 - Dedicated consumer/end-use node for kitchen and bathrooms.
 - Dedicated DHW recirculation return port on the indirect boiler.
 
@@ -211,7 +211,7 @@ Potential catalog gaps for this project:
 ## Initial design decisions for the first generated diagram
 
 1. Do not draw a water meter.
-2. Draw water treatment before the boiler on the cold-water inlet side.
+2. Draw `water-treatment-unit` before the boiler on the cold-water inlet side.
 3. Draw three DHW branches:
    - `Кухня 1 эт.`
    - `С/У 1 эт.`
@@ -234,8 +234,7 @@ Potential catalog gaps for this project:
 
 ## Next engineering tasks
 
-1. Confirm exact water-treatment element in the current local library if it differs from the pushed GitHub catalog.
-2. Decide whether to add dedicated manifold elements before asking the MCP agent to generate the final diagram.
-3. Decide how to model DHW consumer endpoints: connection nodes, junctions, or new catalog elements.
-4. Decide how recirculation returns to the boiler: temporary junction near cold inlet, or add a dedicated boiler port.
-5. Add Aigües de Barcelona address-specific water-quality link/report when available.
+1. Decide whether to add dedicated manifold elements before asking the MCP agent to generate the final diagram.
+2. Decide how to model DHW consumer endpoints: connection nodes, junctions, or new catalog elements.
+3. Decide how recirculation returns to the boiler: temporary junction near cold inlet, or add a dedicated boiler port.
+4. Add Aigües de Barcelona address-specific water-quality link/report when available.
