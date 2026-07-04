@@ -25,6 +25,15 @@ export interface AddElementInput extends DiagramPathInput {
   lineType?: string;
 }
 
+export interface UpdateElementInput extends DiagramPathInput {
+  nodeId: string;
+  x?: number;
+  y?: number;
+  label?: string;
+  rotation?: 0 | 90 | 180 | 270;
+  lineType?: string;
+}
+
 export interface ConnectPortsInput extends DiagramPathInput {
   sourceId: string;
   sourcePortId: string;
@@ -137,6 +146,38 @@ function getNode(document: DiagramDocument, nodeId: string): Node<HydraulicNodeD
   }
 
   return node;
+}
+
+export async function updateElementInDiagram(
+  input: UpdateElementInput,
+): Promise<DiagramMutationResult & { node: Node<HydraulicNodeData> }> {
+  if (input.lineType !== undefined && !isLineTypeId(input.lineType)) {
+    throw new Error(`Unknown line type: ${input.lineType}`);
+  }
+
+  const { diagramPath, document } = await readDiagramFile(input);
+  const currentNode = getNode(document, input.nodeId);
+  const nextNode: Node<HydraulicNodeData> = {
+    ...currentNode,
+    position: {
+      x: input.x ?? currentNode.position.x,
+      y: input.y ?? currentNode.position.y,
+    },
+    data: {
+      ...currentNode.data,
+      label: input.label ?? currentNode.data.label,
+      rotation: input.rotation ?? currentNode.data.rotation,
+      lineType: input.lineType ?? currentNode.data.lineType,
+    },
+  };
+
+  const nextDocument = {
+    ...document,
+    nodes: document.nodes.map((node) => (node.id === input.nodeId ? nextNode : node)),
+  };
+
+  await writeDiagramDocument(diagramPath, nextDocument);
+  return { diagramPath, document: nextDocument, node: nextNode };
 }
 
 function assertPortExists(node: Node<HydraulicNodeData>, portId: string): void {
