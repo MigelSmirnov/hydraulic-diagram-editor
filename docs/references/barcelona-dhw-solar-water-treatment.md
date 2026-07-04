@@ -19,9 +19,10 @@ Target system:
   - first floor kitchen;
   - first floor bathroom;
   - second floor bathroom.
-- DHW recirculation from all three branches into one recirculation manifold.
+- DHW recirculation from all three branches into one shared return line.
 - Cold-water inlet includes water treatment / filtration before the boiler.
 - Water meter is out of scope for this diagram.
+- Consumer endpoints are not represented as dedicated library elements in V1.
 
 ---
 
@@ -58,7 +59,8 @@ Diagram impact:
 
 - Draw the cold-water treatment block with service isolation / bypass logic if the catalog supports it.
 - Do not include the water meter in this project unless explicitly requested.
-- Draw a DHW supply manifold and a DHW recirculation manifold.
+- Model DHW distribution and recirculation branching with `junction` points, not dedicated manifold blocks.
+- Add valves on DHW branch takeoffs where readable.
 - Add balancing valves on the recirculation branches where possible.
 
 ---
@@ -197,14 +199,20 @@ Current pushed catalog findings:
 - `circulation-pump` — available.
 - `expansion-tank` — available.
 - `balancing-valve` — available.
-- `junction` — available and can temporarily emulate simple manifolds.
+- `ball-valve` — available for branch isolation.
+- `junction` — available and should be used to model distribution and return branching.
+- `flow-arrow` — available and inherits line-type colour through `lineType` tinting.
 
 Potential catalog gaps for this project:
 
-- Dedicated DHW supply manifold, 1 inlet + 3 outlets.
-- Dedicated DHW recirculation manifold, 3 inlets + 1 outlet.
-- Dedicated consumer/end-use node for kitchen and bathrooms.
+- Dedicated text/label block for branch annotations such as `Уборная 1 этаж`.
 - Dedicated DHW recirculation return port on the indirect boiler.
+
+Explicitly not adding in V1:
+
+- Dedicated manifold / гребёнка elements.
+- Dedicated consumer/end-use nodes for kitchen and bathrooms.
+- Water meter.
 
 ---
 
@@ -212,29 +220,27 @@ Potential catalog gaps for this project:
 
 1. Do not draw a water meter.
 2. Draw `water-treatment-unit` before the boiler on the cold-water inlet side.
-3. Draw three DHW branches:
-   - `Кухня 1 эт.`
-   - `С/У 1 эт.`
-   - `С/У 2 эт.`
-4. Draw three recirculation returns, one from each branch.
-5. Collect the three recirculation returns into a return manifold.
-6. Add balancing valves on the three recirculation returns if layout remains readable.
-7. Add a recirculation pump after the return manifold and before the boiler return point.
-8. Keep roof solar collector and basement technical room visually separated.
-9. Use separate line types for:
-   - cold water;
-   - hot water;
-   - DHW recirculation;
-   - solar supply;
-   - solar return;
-   - drain.
-10. Treat this as a functional hydraulic scheme, not a construction drawing or final legal design.
+3. Model the DHW supply branching with a horizontal trunk and `junction` points.
+4. Model the DHW recirculation return with branch lines converging through `junction` points.
+5. Do not add separate consumer endpoint elements for kitchen or bathrooms in V1.
+6. Use `flow-arrow` elements to show flow directions; tint arrows with the same line type as the nearby line.
+7. Add branch isolation valves on takeoffs where the layout remains readable.
+8. Add balancing valves on the three recirculation returns if layout remains readable.
+9. Add a recirculation pump after the common return point and before the boiler return area.
+10. Keep roof solar collector and basement technical room visually separated.
+11. Use separate line types for:
+    - cold water;
+    - hot water;
+    - DHW recirculation;
+    - solar supply;
+    - solar return;
+    - drain.
+12. Treat this as a functional hydraulic scheme, not a construction drawing or final legal design.
 
 ---
 
 ## Next engineering tasks
 
-1. Decide whether to add dedicated manifold elements before asking the MCP agent to generate the final diagram.
-2. Decide how to model DHW consumer endpoints: connection nodes, junctions, or new catalog elements.
-3. Decide how recirculation returns to the boiler: temporary junction near cold inlet, or add a dedicated boiler port.
-4. Add Aigües de Barcelona address-specific water-quality link/report when available.
+1. Decide how recirculation returns to the boiler: temporary junction near cold inlet, or add a dedicated boiler port.
+2. Later, add a dedicated text/label block for manual or agent-generated annotations.
+3. Add Aigües de Barcelona address-specific water-quality link/report when available.
