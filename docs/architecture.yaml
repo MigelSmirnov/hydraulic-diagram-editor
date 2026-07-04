@@ -6,12 +6,19 @@ project:
     - TypeScript
     - Vite
     - React Flow
+    - Zustand
+    - html-to-image
   notes: No backend. Client-only prototype, designed to grow.
 
 domain_levels:
   Symbol:
     description: Single engineering element, such as a pump, valve, filter, boiler or expansion tank.
     catalog: src/features/diagram-editor/model/elementCatalog.ts
+    current_examples:
+      - Насос
+      - Циркуляционный насос
+      - Обратный клапан
+      - Бойлер косвенного нагрева
   AssemblyBlock:
     description: Future Simulink-like block composed of internal symbols and edges with external ports.
     catalog: src/features/diagram-editor/model/assemblyCatalog.ts
@@ -24,7 +31,7 @@ modules:
     path: src/app
     responsibility: Application shell, global providers and layout composition
     files:
-      App.tsx: Root component. Composes Toolbar + Palette + Canvas + PropertiesPanel.
+      App.tsx: Root component. Composes DiagramAutosave + Toolbar + Palette + Canvas + PropertiesPanel.
       providers/AppProviders.tsx: Global context providers (ReactFlowProvider, room for theme/i18n later).
 
   features/diagram-editor:
@@ -46,14 +53,14 @@ modules:
     responsibility: Custom React Flow node components and node type registration
     files:
       HydraulicNode.tsx: Single generic node. Renders an SVG engineering symbol, optional label, catalog-defined ports and the long-right-click node action menu.
-      nodeTypes.ts: Maps React Flow node type keys to components ({ hydraulic: HydraulicNode }).
+      nodeTypes.ts: "Maps React Flow node type keys to components ({ hydraulic: HydraulicNode })."
 
   features/diagram-editor/edges:
     path: src/features/diagram-editor/edges
     responsibility: Custom React Flow edge components and edge type registration
     files:
       HydraulicEdge.tsx: Hydraulic pipe edge. Builds port-to-stub-to-orthogonal-route paths, styles itself from its line type, and shows an inline delete button when selected.
-      edgeTypes.ts: Maps React Flow edge type keys to components ({ hydraulic: HydraulicEdge }).
+      edgeTypes.ts: "Maps React Flow edge type keys to components ({ hydraulic: HydraulicEdge })."
 
   features/diagram-editor/model:
     path: src/features/diagram-editor/model
@@ -123,3 +130,15 @@ docs:
   roadmap: docs/roadmap.md
   adding_elements: docs/adding-elements.md
   skill_compliance_plan: docs/skill-compliance-plan.md
+
+tests:
+  diagram_editor:
+    path: tests/diagram-editor
+    covers:
+      - port geometry
+      - edge routing
+      - document validation
+      - command behavior
+      - undo/redo history
+      - store integration
+      - autosave encode/decode

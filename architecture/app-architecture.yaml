@@ -8,6 +8,7 @@ project:
     - Vite
     - React Flow
     - Zustand
+    - html-to-image
 
 modules:
   - id: app-shell
@@ -17,11 +18,13 @@ modules:
     owns:
       - root React composition
       - global provider wiring
+      - autosave component placement
     exposes:
       - App
       - AppProviders
     depends_on:
       - diagram-ui
+      - diagram-persistence
     used_by:
       - browser-entry
     data_in:
@@ -196,6 +199,7 @@ modules:
       - DiagramDocument
       - downloadable JSON file
       - validated diagram document
+      - restored autosave document
     forbidden_dependencies:
       - react-flow-canvas
       - palette-ui
@@ -266,6 +270,7 @@ modules:
       - useDiagramStore
       - diagram command functions
       - diagram history functions
+      - restoreDiagram
     depends_on:
       - diagram-domain-model
       - diagram-invariants
@@ -277,6 +282,7 @@ modules:
       - user actions
       - React Flow change events
       - validated imported document
+      - validated autosave document
     data_out:
       - current editor state
       - updated diagram state
@@ -346,7 +352,9 @@ modules:
       - properties panel rendering
       - save/load button wiring
       - export button wiring
+      - autosave mounting
     exposes:
+      - DiagramAutosave
       - Toolbar
       - Palette
       - PropertiesPanel
