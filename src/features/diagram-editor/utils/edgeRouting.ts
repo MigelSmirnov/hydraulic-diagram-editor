@@ -32,6 +32,75 @@ function compactPoints(points: Point[]): Point[] {
   return points.filter((point, index) => index === 0 || !pointsEqual(point, points[index - 1]));
 }
 
+function sameDirectionRoutePoints(
+  sourcePoint: Point,
+  sourceDirection: PortDirection,
+  sourceStub: Point,
+  targetPoint: Point,
+  targetStub: Point,
+): Point[] {
+  if (sourceDirection === 'top') {
+    const busY = Math.min(sourceStub.y, targetStub.y);
+    return [sourcePoint, sourceStub, { x: targetPoint.x, y: busY }, targetPoint];
+  }
+
+  if (sourceDirection === 'bottom') {
+    const busY = Math.max(sourceStub.y, targetStub.y);
+    return [sourcePoint, sourceStub, { x: targetPoint.x, y: busY }, targetPoint];
+  }
+
+  if (sourceDirection === 'left') {
+    const busX = Math.min(sourceStub.x, targetStub.x);
+    return [sourcePoint, sourceStub, { x: busX, y: targetPoint.y }, targetPoint];
+  }
+
+  const busX = Math.max(sourceStub.x, targetStub.x);
+  return [sourcePoint, sourceStub, { x: busX, y: targetPoint.y }, targetPoint];
+}
+
+function isHorizontal(direction: PortDirection): boolean {
+  return direction === 'left' || direction === 'right';
+}
+
+function isVertical(direction: PortDirection): boolean {
+  return direction === 'top' || direction === 'bottom';
+}
+
+function perpendicularRoutePoints(
+  sourcePoint: Point,
+  sourceDirection: PortDirection,
+  sourceStub: Point,
+  targetPoint: Point,
+  targetDirection: PortDirection,
+  targetStub: Point,
+): Point[] {
+  if (isHorizontal(sourceDirection) && isVertical(targetDirection)) {
+    const busY = targetDirection === 'top'
+      ? Math.min(sourceStub.y, targetStub.y)
+      : Math.max(sourceStub.y, targetStub.y);
+
+    return [
+      sourcePoint,
+      sourceStub,
+      { x: sourceStub.x, y: busY },
+      { x: targetPoint.x, y: busY },
+      targetPoint,
+    ];
+  }
+
+  const busX = targetDirection === 'left'
+    ? Math.min(sourceStub.x, targetStub.x)
+    : Math.max(sourceStub.x, targetStub.x);
+
+  return [
+    sourcePoint,
+    sourceStub,
+    { x: busX, y: sourceStub.y },
+    { x: busX, y: targetPoint.y },
+    targetPoint,
+  ];
+}
+
 export function buildOrthogonalPath(
   sourcePoint: Point,
   sourceDirection: PortDirection,
@@ -45,6 +114,32 @@ export function buildOrthogonalPath(
   const dx = Math.abs(targetStub.x - sourceStub.x);
   const dy = Math.abs(targetStub.y - sourceStub.y);
   const routePoints: Point[] = [sourcePoint, sourceStub];
+
+  if (sourceDirection === targetDirection) {
+    return compactPoints(
+      sameDirectionRoutePoints(sourcePoint, sourceDirection, sourceStub, targetPoint, targetStub),
+    )
+      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ');
+  }
+
+  if (
+    (isHorizontal(sourceDirection) && isVertical(targetDirection)) ||
+    (isVertical(sourceDirection) && isHorizontal(targetDirection))
+  ) {
+    return compactPoints(
+      perpendicularRoutePoints(
+        sourcePoint,
+        sourceDirection,
+        sourceStub,
+        targetPoint,
+        targetDirection,
+        targetStub,
+      ),
+    )
+      .map((point, index) => `${index === 0 ? 'M' : 'L'} ${point.x} ${point.y}`)
+      .join(' ');
+  }
 
   if (dx >= dy) {
     const midX = (sourceStub.x + targetStub.x) / 2;
