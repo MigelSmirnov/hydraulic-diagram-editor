@@ -94,6 +94,18 @@ export const elementCatalog: HydraulicElementDef[] = [
     ],
   },
   {
+    type: 'three-way-actuated-valve',
+    label: 'Трехходовой клапан с приводом',
+    category: 'valves',
+    icon: 'three-way-actuated-valve',
+    defaultSize: { width: 74, height: 92 },
+    ports: [
+      { id: 'left', label: 'Левый порт', side: 'left', direction: 'left', x: 0, y: 56, kind: 'inlet' },
+      { id: 'right', label: 'Правый порт', side: 'right', direction: 'right', x: 74, y: 56, kind: 'outlet' },
+      { id: 'bottom', label: 'Нижний порт', side: 'bottom', direction: 'bottom', x: 37, y: 92, kind: 'junction' },
+    ],
+  },
+  {
     type: 'balancing-valve',
     label: 'Балансировочный вентиль',
     category: 'valves',

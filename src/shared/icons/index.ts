@@ -5,6 +5,7 @@ import { ExpansionTankIcon } from './ExpansionTankIcon';
 import { PumpIcon } from './PumpIcon';
 import { VerticalPumpIcon } from './VerticalPumpIcon';
 import { BallValveIcon } from './BallValveIcon';
+import { ThreeWayActuatedValveIcon } from './ThreeWayActuatedValveIcon';
 import { FilterIcon } from './FilterIcon';
 import { WaterConnectionIcon } from './WaterConnectionIcon';
 import { CheckValveIcon } from './CheckValveIcon';
@@ -29,6 +30,7 @@ export const iconRegistry: Record<string, IconComponent> = {
   'pump': PumpIcon,
   'vertical-pump': VerticalPumpIcon,
   'ball-valve': BallValveIcon,
+  'three-way-actuated-valve': ThreeWayActuatedValveIcon,
   'filter': FilterIcon,
   'water-connection': WaterConnectionIcon,
   'check-valve': CheckValveIcon,
