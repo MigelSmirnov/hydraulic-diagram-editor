@@ -11,6 +11,7 @@ import {
   readDiagramFile,
   validateDiagramFile,
 } from './diagramFile';
+import { renderDiagramPng } from './renderPng';
 
 function textJson(value: unknown) {
   return {
@@ -109,6 +110,22 @@ server.registerTool(
     inputSchema: diagramPathSchema,
   },
   async (input) => textJson(await validateDiagramFile(input)),
+);
+
+server.registerTool(
+  'hydraulic_render_png',
+  {
+    title: 'Render hydraulic diagram PNG',
+    description: 'Render a diagram JSON file through the real React editor UI and save a canvas PNG screenshot.',
+    inputSchema: {
+      ...diagramPathSchema,
+      outputPath: z.string().optional().describe('PNG path inside the project root. Defaults to exports/agent-preview.png.'),
+      width: z.number().int().min(320).optional().describe('Browser viewport width. Defaults to 1280.'),
+      height: z.number().int().min(240).optional().describe('Browser viewport height. Defaults to 900.'),
+      timeoutMs: z.number().int().min(1000).optional().describe('Render timeout in milliseconds. Defaults to 30000.'),
+    },
+  },
+  async (input) => textJson(await renderDiagramPng(input)),
 );
 
 const transport = new StdioServerTransport();

@@ -32,6 +32,11 @@ npm run mcp
 
 Подробнее: [`docs/mcp.md`](docs/mcp.md). Пример схемы, созданной в агентском
 формате: [`examples/mcp/boiler-agent-diagram.json`](examples/mcp/boiler-agent-diagram.json).
+Для PNG-рендера через MCP установи браузер Playwright один раз:
+
+```bash
+npx playwright install chromium
+```
 
 Требуется Node.js 18+.
 

@@ -20,6 +20,17 @@ Tools:
 - `hydraulic_add_element` — add a catalog element to the diagram.
 - `hydraulic_connect_ports` — connect two element ports.
 - `hydraulic_validate_diagram` — return validation errors.
+- `hydraulic_render_png` — render the JSON through the real React editor UI
+  and save a canvas PNG screenshot.
 
 The server edits the same JSON format that the React editor can load with
 `Load JSON`.
+
+PNG rendering uses Playwright. Install the Chromium browser once after
+dependency installation:
+
+```bash
+npx playwright install chromium
+```
+
+The default render output is `exports/agent-preview.png`.
