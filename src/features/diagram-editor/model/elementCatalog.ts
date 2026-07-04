@@ -173,6 +173,18 @@ export const elementCatalog: HydraulicElementDef[] = [
     ],
   },
   {
+    type: 'water-treatment-unit',
+    label: 'Блок водоподготовки',
+    category: 'treatment',
+    icon: 'water-treatment-unit',
+    defaultSize: { width: 96, height: 74 },
+    ports: [
+      { id: 'inlet', label: 'Вход ХВС', side: 'left', direction: 'left', x: 0, y: 37, kind: 'inlet', allowedLineTypes: ['pipe_cold_water'], showLabel: true },
+      { id: 'outlet', label: 'Выход ХВС', side: 'right', direction: 'right', x: 96, y: 37, kind: 'outlet', allowedLineTypes: ['pipe_cold_water'], showLabel: true },
+      { id: 'drain', label: 'Сервисный сброс', side: 'bottom', direction: 'bottom', x: 48, y: 74, kind: 'drain', allowedLineTypes: ['pipe_drain'] },
+    ],
+  },
+  {
     type: 'water-meter',
     label: 'Счётчик воды',
     category: 'treatment',
