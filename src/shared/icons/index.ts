@@ -8,6 +8,7 @@ import { BallValveIcon } from './BallValveIcon';
 import { ThreeWayActuatedValveIcon } from './ThreeWayActuatedValveIcon';
 import { FlangeIcon } from './FlangeIcon';
 import { FilterIcon } from './FilterIcon';
+import { WaterTreatmentUnitIcon } from './WaterTreatmentUnitIcon';
 import { WaterConnectionIcon } from './WaterConnectionIcon';
 import { CheckValveIcon } from './CheckValveIcon';
 import { SafetyValveIcon } from './SafetyValveIcon';
@@ -34,6 +35,7 @@ export const iconRegistry: Record<string, IconComponent> = {
   'three-way-actuated-valve': ThreeWayActuatedValveIcon,
   'flange': FlangeIcon,
   'filter': FilterIcon,
+  'water-treatment-unit': WaterTreatmentUnitIcon,
   'water-connection': WaterConnectionIcon,
   'check-valve': CheckValveIcon,
   'safety-valve': SafetyValveIcon,
