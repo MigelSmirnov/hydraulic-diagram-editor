@@ -1,4 +1,4 @@
-import { useCallback, useRef, type DragEvent, type MouseEvent } from 'react';
+import { useCallback, useEffect, useRef, type DragEvent, type MouseEvent } from 'react';
 import ReactFlow, {
   Background,
   BackgroundVariant,
@@ -16,6 +16,12 @@ const SHORT_RIGHT_CLICK_MS = 250;
 
 function isPaneRightClick(event: MouseEvent<HTMLDivElement>): boolean {
   return event.button === 2 && event.target instanceof Element && Boolean(event.target.closest('.react-flow__pane'));
+}
+
+function isEditableTarget(target: EventTarget | null): boolean {
+  if (!(target instanceof HTMLElement)) return false;
+  const tagName = target.tagName.toLowerCase();
+  return tagName === 'input' || tagName === 'textarea' || tagName === 'select' || target.isContentEditable;
 }
 
 /**
@@ -37,6 +43,36 @@ export function DiagramCanvas() {
   const lastElementType = useDiagramStore((s) => s.lastElementType);
   const showGrid = useDiagramStore((s) => s.showGrid);
   const snapToGrid = useDiagramStore((s) => s.snapToGrid);
+  const undo = useDiagramStore((s) => s.undo);
+  const redo = useDiagramStore((s) => s.redo);
+
+  useEffect(() => {
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (isEditableTarget(event.target)) return;
+      if (!event.ctrlKey && !event.metaKey) return;
+
+      const key = event.key.toLowerCase();
+      if (key === 'z' && event.shiftKey) {
+        event.preventDefault();
+        redo();
+        return;
+      }
+
+      if (key === 'z') {
+        event.preventDefault();
+        undo();
+        return;
+      }
+
+      if (key === 'y') {
+        event.preventDefault();
+        redo();
+      }
+    };
+
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, [redo, undo]);
 
   const onDragOver = useCallback((event: DragEvent) => {
     event.preventDefault();
