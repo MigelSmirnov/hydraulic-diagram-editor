@@ -59,24 +59,33 @@ modules:
     responsibility: TypeScript domain model, element catalog, line types and templates
     files:
       types.ts: All domain types (symbols, assembly blocks, ports, line types, templates, node/edge data).
-      diagramDocument.ts: JSON document format, schema version and basic document validation.
+      diagramDocument.ts: JSON document format, schema version and basic shape validation.
+      diagramValidation.ts: Executable validation for imported diagram documents, references, ports, line types and rotations.
       elementCatalog.ts: Catalog of single engineering symbols and their connection ports.
       assemblyCatalog.ts: Future catalog of assembly blocks with external ports and internal diagrams.
       lineTypes.ts: Catalog of line, pipe and cable types.
       templates.ts: Predefined diagrams.
 
+  features/diagram-editor/persistence:
+    path: src/features/diagram-editor/persistence
+    responsibility: Editable diagram JSON persistence and browser file adapters
+    files:
+      diagramJson.ts: Serializes, deserializes, downloads and reads DiagramDocument JSON files. Deserialization validates structure and domain invariants before state replacement.
+      index.ts: Public boundary for persistence imports.
+
   features/diagram-editor/store:
     path: src/features/diagram-editor/store
     responsibility: State management for nodes, edges, selected line type and editor settings
     files:
-      diagramStore.ts: Zustand store. nodes, edges, selectedLineType, showGrid, snapToGrid + all mutations (add/rotate/delete node, delete edge, connect, line type, template/document load).
+      diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, showGrid, snapToGrid + React Flow bindings and UI-facing actions.
+      diagramCommands.ts: Pure command functions for add/connect/rotate/delete/update/load/replace behavior. This is the foundation for undo/redo.
+      diagramHistory.ts: Pure undo/redo stack helpers for diagram data snapshots.
 
   features/diagram-editor/utils:
     path: src/features/diagram-editor/utils
-    responsibility: Feature helpers for React Flow structures and diagram file import/export
+    responsibility: Feature helpers for React Flow structures, port geometry and edge routing
     files:
       createNode.ts: Builds a React Flow node from a catalog element type + position.
-      diagramJson.ts: Serializes, deserializes, downloads and reads DiagramDocument JSON files.
       edgeRouting.ts: Builds simple orthogonal pipe paths from rotated port directions.
       portGeometry.ts: Computes rotated symbol sizes and rendered port coordinates from symbol-local ports.
 
@@ -100,6 +109,8 @@ modules:
       id.ts: Unique id generator for nodes/edges.
 
 docs:
+  app_architecture: architecture/app-architecture.yaml
   invariants: docs/invariants.md
   roadmap: docs/roadmap.md
   adding_elements: docs/adding-elements.md
+  skill_compliance_plan: docs/skill-compliance-plan.md

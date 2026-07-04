@@ -5,9 +5,11 @@
 - Future assembly blocks are stored in `src/features/diagram-editor/model/assemblyCatalog.ts`.
 - Diagram templates and reusable diagram fragments are stored in `src/features/diagram-editor/model/templates.ts`.
 - Diagrams are saved and loaded as `DiagramDocument` from `src/features/diagram-editor/model/diagramDocument.ts`.
+- Diagram JSON persistence lives behind `src/features/diagram-editor/persistence/index.ts`.
+- Imported JSON must pass executable validation from `src/features/diagram-editor/model/diagramValidation.ts` before replacing editor state.
 - The JSON document format must include a required schema version.
 - UI components must not manually assemble or parse diagram JSON.
-- JSON import must run basic document structure validation before replacing editor state.
+- JSON import must run document structure and domain reference validation before replacing editor state.
 - An assembly block must not be represented as a flat image only; it has external ports and an internal diagram structure.
 - Assembly blocks should be designed so they can later be expanded and their internal diagram edited.
 - Nodes must not be styled as visual cards or flowchart blocks.
@@ -35,3 +37,5 @@
 - Components should stay small and focused.
 - Prefer typed configuration over repeated hardcoded JSX.
 - Editor state lives in `diagramStore`; components read and mutate it through store actions.
+- Durable diagram mutations should be expressed through pure command functions in `src/features/diagram-editor/store/diagramCommands.ts` so they can be tested and later wrapped by undo/redo.
+- Undo/redo history stores durable diagram data snapshots (`nodes`, `edges`) and must not store transient UI chrome such as open panels, hover state or file input state.

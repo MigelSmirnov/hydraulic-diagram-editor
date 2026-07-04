@@ -2,7 +2,6 @@ import { create } from 'zustand';
 import {
   applyNodeChanges,
   applyEdgeChanges,
-  addEdge,
   type Node,
   type Edge,
   type Connection,
@@ -15,9 +14,27 @@ import type {
   LineTypeId,
 } from '../model/types';
 import type { DiagramDocumentSettings } from '../model/diagramDocument';
-import { DEFAULT_LINE_TYPE, isLineTypeId } from '../model/lineTypes';
-import { createNode } from '../utils/createNode';
+import { DEFAULT_LINE_TYPE } from '../model/lineTypes';
 import { getTemplate } from '../model/templates';
+import {
+  addElementCommand,
+  clearDiagramCommand,
+  connectPorts,
+  deleteEdgeCommand,
+  deleteNodeCommand,
+  loadTemplateCommand,
+  replaceDiagramCommand,
+  resolveLineTypeCommand,
+  rotateNodeCommand,
+  updateEdgeLineTypeCommand,
+  updateNodeLineTypeCommand,
+} from './diagramCommands';
+import {
+  pushDiagramHistory,
+  redoDiagramHistory,
+  undoDiagramHistory,
+  type DiagramHistoryState,
+} from './diagramHistory';
 
 export type HNode = Node<HydraulicNodeData>;
 export type HEdge = Edge<HydraulicEdgeData>;
@@ -26,6 +43,8 @@ interface DiagramState {
   // --- data ---
   nodes: HNode[];
   edges: HEdge[];
+  past: DiagramHistoryState['past'];
+  future: DiagramHistoryState['future'];
 
   // --- editor settings ---
   selectedLineType: LineTypeId;
@@ -56,6 +75,8 @@ interface DiagramState {
   rotateNode: (nodeId: string) => void;
   deleteNode: (nodeId: string) => void;
   deleteEdge: (edgeId: string) => void;
+  undo: () => void;
+  redo: () => void;
   toggleGrid: () => void;
   toggleSnap: () => void;
   togglePalette: () => void;
@@ -71,6 +92,8 @@ interface DiagramState {
 export const useDiagramStore = create<DiagramState>((set, get) => ({
   nodes: [],
   edges: [],
+  past: [],
+  future: [],
   selectedLineType: DEFAULT_LINE_TYPE,
   showGrid: false,
   snapToGrid: false,
@@ -84,97 +107,88 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
     set({ edges: applyEdgeChanges(changes, get().edges) as HEdge[] }),
 
   onConnect: (connection) =>
-    set({
-      edges: addEdge(
-        {
-          ...connection,
-          type: 'hydraulic',
-          data: { lineType: get().selectedLineType },
-        },
-        get().edges,
-      ) as HEdge[],
+    set((state) => {
+      const nextEdges = connectPorts(state.edges, connection, state.selectedLineType);
+      return {
+        ...pushDiagramHistory(state, state),
+        edges: nextEdges,
+      };
     }),
 
-  addElement: (type, position) => {
-    const node = createNode(type, position);
-    // Remember the active line type so colour-inheriting elements (e.g. the
-    // flow arrow) are tinted to match the pipes being drawn.
-    node.data.lineType = get().selectedLineType;
-    set({ nodes: [...get().nodes, node] });
-  },
+  addElement: (type, position) =>
+    set((state) => {
+      const nextNodes = addElementCommand(state.nodes, type, position, state.selectedLineType);
+      return {
+        ...pushDiagramHistory(state, state),
+        nodes: nextNodes,
+      };
+    }),
 
-  clear: () => set({ nodes: [], edges: [] }),
+  clear: () =>
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      ...clearDiagramCommand(),
+    })),
 
   loadTemplate: (id) => {
     const template = getTemplate(id);
     if (!template) return;
 
-    const nodes = template.nodes.map((n) =>
-      createNode(n.type, n.position, n.id, n.label),
-    );
-
-    const edges: HEdge[] = template.edges.map((e) => ({
-      id: e.id,
-      source: e.source,
-      sourceHandle: e.sourceHandle,
-      target: e.target,
-      targetHandle: e.targetHandle,
-      type: 'hydraulic',
-      data: { lineType: e.lineType },
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      ...loadTemplateCommand(template),
     }));
-
-    set({ nodes, edges });
   },
 
   replaceDiagram: ({ nodes, edges, settings }) =>
-    set((state) => ({
-      nodes,
-      edges,
-      showGrid: settings?.showGrid ?? state.showGrid,
-      snapToGrid: settings?.snapToGrid ?? state.snapToGrid,
-      selectedLineType: settings?.activeLineType
-        ? settings.activeLineType
-        : state.selectedLineType,
-    })),
+    set((state) =>
+      ({
+        ...pushDiagramHistory(state, state),
+        ...replaceDiagramCommand(
+          {
+            selectedLineType: state.selectedLineType,
+            showGrid: state.showGrid,
+            snapToGrid: state.snapToGrid,
+          },
+          { nodes, edges, settings },
+        ),
+      }),
+    ),
 
-  setLineType: (id) => set({ selectedLineType: isLineTypeId(id) ? id : DEFAULT_LINE_TYPE }),
+  setLineType: (id) => set({ selectedLineType: resolveLineTypeCommand(id) }),
   updateEdgeLineType: (edgeId, lineType) =>
-    set({
-      edges: get().edges.map((edge) =>
-        edge.id === edgeId
-          ? { ...edge, data: { ...edge.data, lineType } }
-          : edge,
-      ),
-    }),
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      edges: updateEdgeLineTypeCommand(state.edges, edgeId, lineType),
+    })),
   updateNodeLineType: (nodeId, lineType) =>
-    set({
-      nodes: get().nodes.map((node) =>
-        node.id === nodeId
-          ? { ...node, data: { ...node.data, lineType } }
-          : node,
-      ),
-    }),
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      nodes: updateNodeLineTypeCommand(state.nodes, nodeId, lineType),
+    })),
   rotateNode: (nodeId) =>
-    set({
-      nodes: get().nodes.map((node) =>
-        node.id === nodeId
-          ? {
-              ...node,
-              data: {
-                ...node.data,
-                rotation: ((node.data.rotation ?? 0) + 90) % 360,
-              },
-            }
-          : node,
-      ),
-    }),
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      nodes: rotateNodeCommand(state.nodes, nodeId),
+    })),
   deleteNode: (nodeId) =>
-    set({
-      nodes: get().nodes.filter((node) => node.id !== nodeId),
-      edges: get().edges.filter((edge) => edge.source !== nodeId && edge.target !== nodeId),
-    }),
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      ...deleteNodeCommand(state.nodes, state.edges, nodeId),
+    })),
   deleteEdge: (edgeId) =>
-    set({ edges: get().edges.filter((edge) => edge.id !== edgeId) }),
+    set((state) => ({
+      ...pushDiagramHistory(state, state),
+      edges: deleteEdgeCommand(state.edges, edgeId),
+    })),
+  undo: () =>
+    set((state) =>
+      undoDiagramHistory(state, state) ?? {},
+    ),
+  redo: () =>
+    set((state) =>
+      redoDiagramHistory(state, state) ?? {},
+    ),
   toggleGrid: () => set((s) => ({ showGrid: !s.showGrid })),
   toggleSnap: () => set((s) => ({ snapToGrid: !s.snapToGrid })),
   togglePalette: () => set((s) => ({ showPalette: !s.showPalette })),

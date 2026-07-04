@@ -1,0 +1,395 @@
+project:
+  id: hydraulic-diagram-editor
+  name: Hydraulic Diagram Editor
+  purpose: Client-only visual editor for domestic hydraulic schemes.
+  stack:
+    - React
+    - TypeScript
+    - Vite
+    - React Flow
+    - Zustand
+
+modules:
+  - id: app-shell
+    name: App Shell
+    layer: ui
+    responsibility: Composes the application layout and global providers without hydraulic domain logic.
+    owns:
+      - root React composition
+      - global provider wiring
+    exposes:
+      - App
+      - AppProviders
+    depends_on:
+      - diagram-ui
+    used_by:
+      - browser-entry
+    data_in:
+      - none
+    data_out:
+      - rendered application shell
+    forbidden_dependencies:
+      - diagram-persistence-internals
+      - diagram-geometry-internals
+    extension_points:
+      - theme provider
+      - localization provider
+    invariant_files: []
+    config_files: []
+
+  - id: diagram-domain-model
+    name: Diagram Domain Model
+    layer: domain
+    responsibility: Owns durable hydraulic diagram types, symbol definitions, line types, templates and document schema.
+    owns:
+      - symbol definitions
+      - port definitions
+      - line type definitions
+      - diagram templates
+      - diagram document schema
+    exposes:
+      - ElementPort
+      - HydraulicElementDef
+      - LineTypeDef
+      - DiagramDocument
+      - getElementDef
+      - getLineTypeDef
+    depends_on: []
+    used_by:
+      - diagram-element-library
+      - diagram-geometry
+      - diagram-state
+      - diagram-persistence
+      - diagram-ui
+    data_in:
+      - catalog constants
+      - template constants
+    data_out:
+      - typed diagram definitions
+      - typed document data
+    forbidden_dependencies:
+      - diagram-ui
+      - react-flow-canvas
+      - browser-file-adapters
+    extension_points:
+      - clean DiagramElementInstance model
+      - clean DiagramConnection model
+      - domain-specific required element rules
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/elementCatalog.ts
+      - src/features/diagram-editor/model/lineTypes.ts
+      - src/features/diagram-editor/model/templates.ts
+
+  - id: diagram-element-library
+    name: SVG Engineering Element Library
+    layer: domain
+    responsibility: Owns the reusable hydraulic element catalog and SVG symbol registry contract.
+    owns:
+      - element catalog entries
+      - symbol icon keys
+      - explicit local port geometry
+      - element categories
+    exposes:
+      - elementCatalog
+      - categories
+      - elementCatalogMap
+      - getElementDef
+      - iconRegistry
+    depends_on:
+      - diagram-domain-model
+      - shared-icons
+    used_by:
+      - diagram-ui
+      - diagram-geometry
+      - diagram-persistence
+    data_in:
+      - SVG icon components
+      - element metadata
+    data_out:
+      - palette definitions
+      - node render definitions
+      - port definitions
+    forbidden_dependencies:
+      - diagram-state
+      - diagram-persistence-internals
+      - browser-file-adapters
+    extension_points:
+      - water treatment elements
+      - manifold variants
+      - custom element libraries
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/elementCatalog.ts
+
+  - id: diagram-geometry
+    name: Diagram Geometry
+    layer: domain
+    responsibility: Computes rotated port positions, rotated port directions and orthogonal connection routes.
+    owns:
+      - port rotation helpers
+      - rotated symbol sizing
+      - orthogonal edge routing
+    exposes:
+      - normalizeRotation
+      - getRotatedSymbolSize
+      - getRotatedPortPosition
+      - getRotatedPortDirection
+      - buildOrthogonalPath
+    depends_on:
+      - diagram-domain-model
+    used_by:
+      - react-flow-canvas
+      - diagram-ui
+    data_in:
+      - local port coordinates
+      - symbol size
+      - node rotation
+      - endpoint positions
+    data_out:
+      - rendered handle positions
+      - routed SVG path data
+    forbidden_dependencies:
+      - diagram-state
+      - diagram-persistence
+      - browser-file-adapters
+    extension_points:
+      - collision-aware routing
+      - route handles
+      - spacing constraints
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files: []
+
+  - id: diagram-persistence
+    name: Diagram Persistence
+    layer: infrastructure
+    responsibility: Owns editable diagram JSON serialization, deserialization, schema checks, validation and browser file adapters.
+    owns:
+      - diagram JSON serialization
+      - diagram JSON deserialization
+      - schema version checks
+      - import validation before state replacement
+      - browser download/read adapters
+    exposes:
+      - serializeDiagram
+      - deserializeDiagram
+      - downloadDiagramJson
+      - readDiagramJsonFile
+    depends_on:
+      - diagram-domain-model
+      - diagram-invariants
+    used_by:
+      - diagram-ui
+      - diagram-state
+    data_in:
+      - React Flow nodes and edges
+      - editor document settings
+      - parsed unknown JSON
+      - uploaded File
+    data_out:
+      - DiagramDocument
+      - downloadable JSON file
+      - validated diagram document
+    forbidden_dependencies:
+      - react-flow-canvas
+      - palette-ui
+      - properties-ui
+    extension_points:
+      - migrations
+      - autosave adapter
+      - cloud storage adapter
+      - clean domain-model save format
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/diagramDocument.ts
+
+  - id: diagram-invariants
+    name: Diagram Invariants
+    layer: domain
+    responsibility: Owns executable checks for document structure, references, ports, line types and connection constraints.
+    owns:
+      - node reference validation
+      - edge reference validation
+      - port existence validation
+      - line type validation
+      - rotation validation
+    exposes:
+      - validateDiagramDocument
+      - assertValidDiagramDocument
+    depends_on:
+      - diagram-domain-model
+    used_by:
+      - diagram-persistence
+      - diagram-state
+    data_in:
+      - DiagramDocument
+    data_out:
+      - validation errors
+      - assertion result
+    forbidden_dependencies:
+      - diagram-ui
+      - browser-file-adapters
+      - react-flow-canvas
+    extension_points:
+      - port kind compatibility rules
+      - required element checks
+      - custom element connection rules
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/elementCatalog.ts
+      - src/features/diagram-editor/model/lineTypes.ts
+
+  - id: diagram-state
+    name: Diagram State
+    layer: application
+    responsibility: Owns editor state, selection-derived mutations and application actions around nodes, edges and settings.
+    owns:
+      - nodes
+      - edges
+      - selected line type
+      - grid settings
+      - panel visibility
+      - editor actions
+      - pure diagram commands
+      - undo/redo history stacks
+    exposes:
+      - useDiagramStore
+      - diagram command functions
+      - diagram history functions
+    depends_on:
+      - diagram-domain-model
+      - diagram-invariants
+      - react-flow-canvas
+    used_by:
+      - diagram-ui
+      - app-shell
+    data_in:
+      - user actions
+      - React Flow change events
+      - validated imported document
+    data_out:
+      - current editor state
+      - updated diagram state
+      - undo/redo availability
+    forbidden_dependencies:
+      - browser-file-adapters
+      - diagram-persistence-internals
+    extension_points:
+      - command dispatcher
+      - drag-move command history
+      - dirty state tracking
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/lineTypes.ts
+
+  - id: react-flow-canvas
+    name: React Flow Canvas Adapter
+    layer: infrastructure
+    responsibility: Adapts the editor's diagram concepts to React Flow nodes, edges, handles and canvas interactions.
+    owns:
+      - React Flow node types
+      - React Flow edge types
+      - drag/drop coordinate conversion
+      - canvas controls
+      - keyboard deletion binding
+    exposes:
+      - DiagramCanvas
+      - HydraulicNode
+      - HydraulicEdge
+      - nodeTypes
+      - edgeTypes
+    depends_on:
+      - diagram-domain-model
+      - diagram-geometry
+      - diagram-state
+    used_by:
+      - diagram-ui
+    data_in:
+      - editor state
+      - catalog definitions
+      - user canvas events
+    data_out:
+      - rendered canvas
+      - React Flow changes
+      - connection requests
+    forbidden_dependencies:
+      - diagram-persistence-internals
+    extension_points:
+      - clean domain-to-react-flow adapters
+      - transform handles
+      - route editing
+    invariant_files:
+      - src/features/diagram-editor/model/diagramValidation.ts
+    config_files:
+      - src/features/diagram-editor/model/elementCatalog.ts
+
+  - id: diagram-ui
+    name: Diagram Editor UI
+    layer: ui
+    responsibility: Owns toolbar, palette, properties panel and user-facing editor controls.
+    owns:
+      - toolbar controls
+      - palette grouping
+      - properties panel rendering
+      - save/load button wiring
+    exposes:
+      - Toolbar
+      - Palette
+      - PropertiesPanel
+      - DiagramCanvas
+    depends_on:
+      - diagram-state
+      - diagram-domain-model
+      - diagram-persistence
+      - react-flow-canvas
+    used_by:
+      - app-shell
+    data_in:
+      - editor state
+      - catalog data
+      - user input events
+    data_out:
+      - dispatched editor actions
+      - rendered editor panels
+    forbidden_dependencies:
+      - diagram-persistence-internals
+      - diagram-geometry-internals
+    extension_points:
+      - editable properties
+      - export controls
+      - validation feedback panel
+    invariant_files: []
+    config_files: []
+
+  - id: shared-icons
+    name: Shared SVG Icons
+    layer: shared
+    responsibility: Owns pure SVG symbol components and icon registry entries with no business logic.
+    owns:
+      - icon SVG components
+      - icon registry
+    exposes:
+      - iconRegistry
+    depends_on: []
+    used_by:
+      - diagram-element-library
+      - diagram-ui
+    data_in:
+      - SVG component source
+    data_out:
+      - registered icon components
+    forbidden_dependencies:
+      - diagram-state
+      - diagram-persistence
+      - browser-file-adapters
+    extension_points:
+      - additional hydraulic icons
+    invariant_files: []
+    config_files:
+      - src/shared/icons/index.ts

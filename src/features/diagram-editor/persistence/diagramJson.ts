@@ -5,6 +5,7 @@ import {
   type DiagramDocument,
   type DiagramDocumentSettings,
 } from '../model/diagramDocument';
+import { assertValidDiagramDocument } from '../model/diagramValidation';
 import type { HydraulicEdgeData, HydraulicNodeData } from '../model/types';
 
 interface SerializeDiagramInput {
@@ -31,6 +32,7 @@ export function serializeDiagram({
 
 export function deserializeDiagram(value: unknown): DiagramDocument {
   assertDiagramDocument(value);
+  assertValidDiagramDocument(value);
   return value;
 }
 

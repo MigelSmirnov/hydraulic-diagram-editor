@@ -8,7 +8,7 @@ import {
   downloadDiagramJson,
   readDiagramJsonFile,
   serializeDiagram,
-} from '../utils/diagramJson';
+} from '../persistence';
 
 /**
  * Top toolbar. Editor-wide controls only — no diagram logic beyond calling
@@ -25,10 +25,14 @@ export function Toolbar() {
   const showPalette = useDiagramStore((s) => s.showPalette);
   const showProperties = useDiagramStore((s) => s.showProperties);
   const selectedLineType = useDiagramStore((s) => s.selectedLineType);
+  const canUndo = useDiagramStore((s) => s.past.length > 0);
+  const canRedo = useDiagramStore((s) => s.future.length > 0);
   const toggleGrid = useDiagramStore((s) => s.toggleGrid);
   const toggleSnap = useDiagramStore((s) => s.toggleSnap);
   const togglePalette = useDiagramStore((s) => s.togglePalette);
   const toggleProperties = useDiagramStore((s) => s.toggleProperties);
+  const undo = useDiagramStore((s) => s.undo);
+  const redo = useDiagramStore((s) => s.redo);
   const clear = useDiagramStore((s) => s.clear);
   const loadTemplate = useDiagramStore((s) => s.loadTemplate);
   const replaceDiagram = useDiagramStore((s) => s.replaceDiagram);
@@ -146,6 +150,12 @@ export function Toolbar() {
       </div>
 
       <div className="toolbar__group toolbar__group--end">
+        <button className="btn" onClick={undo} disabled={!canUndo} title="Отменить действие">
+          Undo
+        </button>
+        <button className="btn" onClick={redo} disabled={!canRedo} title="Повторить действие">
+          Redo
+        </button>
         <button className="btn" onClick={handleSaveJson}>
           Save JSON
         </button>
