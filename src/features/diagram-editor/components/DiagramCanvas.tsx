@@ -3,7 +3,6 @@ import ReactFlow, {
   Background,
   BackgroundVariant,
   Controls,
-  MiniMap,
   ConnectionMode,
   useReactFlow,
 } from 'reactflow';
@@ -110,7 +109,6 @@ export function DiagramCanvas() {
           <Background variant={BackgroundVariant.Lines} gap={GRID_GAP} size={1} color="#e2e8f0" />
         )}
         <Controls showInteractive={false} />
-        <MiniMap pannable zoomable nodeColor="#94a3b8" maskColor="rgba(148,163,184,0.12)" />
       </ReactFlow>
     </div>
   );
