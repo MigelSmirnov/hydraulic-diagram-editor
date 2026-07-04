@@ -27,6 +27,7 @@ export function DiagramCanvas() {
   const onNodesChange = useDiagramStore((s) => s.onNodesChange);
   const onEdgesChange = useDiagramStore((s) => s.onEdgesChange);
   const onConnect = useDiagramStore((s) => s.onConnect);
+  const commitHistoryCheckpoint = useDiagramStore((s) => s.commitHistoryCheckpoint);
   const addElement = useDiagramStore((s) => s.addElement);
   const showGrid = useDiagramStore((s) => s.showGrid);
   const snapToGrid = useDiagramStore((s) => s.snapToGrid);
@@ -55,6 +56,8 @@ export function DiagramCanvas() {
         onNodesChange={onNodesChange}
         onEdgesChange={onEdgesChange}
         onConnect={onConnect}
+        onNodeDragStart={commitHistoryCheckpoint}
+        onSelectionDragStart={commitHistoryCheckpoint}
         nodeTypes={nodeTypes}
         edgeTypes={edgeTypes}
         connectionMode={ConnectionMode.Loose}

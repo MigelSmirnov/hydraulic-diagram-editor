@@ -281,8 +281,8 @@ modules:
       - diagram-persistence-internals
     extension_points:
       - command dispatcher
-      - drag-move command history
       - dirty state tracking
+      - history size limit
     invariant_files:
       - src/features/diagram-editor/model/diagramValidation.ts
     config_files:

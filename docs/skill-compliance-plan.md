@@ -45,7 +45,7 @@ Status: in progress. Architecture YAML and the first persistence module boundary
 - Route store mutations through commands.
 - Add undo/redo history and command tests.
 
-Status: in progress. Core add/connect/rotate/delete/update/load/replace commands are implemented and tested. Undo/redo history is implemented for command-driven actions. Move history for React Flow drag changes remains.
+Status: done for the current editor scope. Core add/connect/rotate/delete/update/load/replace commands are implemented and tested. Undo/redo history is implemented for command-driven actions and drag movement checkpoints.
 
 ### Phase 4: Domain Model Cleanup
 

@@ -79,7 +79,7 @@ modules:
     files:
       diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, showGrid, snapToGrid + React Flow bindings and UI-facing actions.
       diagramCommands.ts: Pure command functions for add/connect/rotate/delete/update/load/replace behavior. This is the foundation for undo/redo.
-      diagramHistory.ts: Pure undo/redo stack helpers for diagram data snapshots.
+      diagramHistory.ts: Pure undo/redo stack helpers for diagram data snapshots. Drag move history is recorded through a checkpoint before React Flow position changes.
 
   features/diagram-editor/utils:
     path: src/features/diagram-editor/utils

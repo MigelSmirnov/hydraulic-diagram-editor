@@ -39,3 +39,4 @@
 - Editor state lives in `diagramStore`; components read and mutate it through store actions.
 - Durable diagram mutations should be expressed through pure command functions in `src/features/diagram-editor/store/diagramCommands.ts` so they can be tested and later wrapped by undo/redo.
 - Undo/redo history stores durable diagram data snapshots (`nodes`, `edges`) and must not store transient UI chrome such as open panels, hover state or file input state.
+- Drag movement history must be committed once at drag start, not on every React Flow position change.

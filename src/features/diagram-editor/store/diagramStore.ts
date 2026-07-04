@@ -59,6 +59,7 @@ interface DiagramState {
   onNodesChange: (changes: NodeChange[]) => void;
   onEdgesChange: (changes: EdgeChange[]) => void;
   onConnect: (connection: Connection) => void;
+  commitHistoryCheckpoint: () => void;
 
   // --- actions ---
   addElement: (type: string, position: { x: number; y: number }) => void;
@@ -114,6 +115,9 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
         edges: nextEdges,
       };
     }),
+
+  commitHistoryCheckpoint: () =>
+    set((state) => pushDiagramHistory(state, state)),
 
   addElement: (type, position) =>
     set((state) => {
