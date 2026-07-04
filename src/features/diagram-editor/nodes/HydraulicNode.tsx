@@ -1,4 +1,4 @@
-import { memo, useEffect, type CSSProperties, type MouseEvent } from 'react';
+import { memo, useEffect, useRef, useState, type CSSProperties, type MouseEvent } from 'react';
 import { Handle, Position, type NodeProps, useUpdateNodeInternals } from 'reactflow';
 import type { ElementPort, HandleId, HydraulicNodeData } from '../model/types';
 import { getElementDef } from '../model/elementCatalog';
@@ -18,6 +18,12 @@ const HANDLE_POSITION: Record<HandleId, Position> = {
   bottom: Position.Bottom,
   left: Position.Left,
 };
+const LONG_RIGHT_CLICK_MS = 250;
+
+interface NodeContextMenuState {
+  x: number;
+  y: number;
+}
 
 function getPortStyle(port: ElementPort, width: number, height: number, rotation: number): CSSProperties {
   const point = getRotatedPortPosition(port, width, height, rotation);
@@ -55,12 +61,32 @@ function HydraulicNodeComponent({ id, data, selected }: NodeProps<HydraulicNodeD
   const updateNodeInternals = useUpdateNodeInternals();
   const rotateNode = useDiagramStore((s) => s.rotateNode);
   const deleteNode = useDiagramStore((s) => s.deleteNode);
+  const [contextMenu, setContextMenu] = useState<NodeContextMenuState | null>(null);
+  const contextTimerRef = useRef<number | null>(null);
   const def = getElementDef(data.type);
   const rotation = normalizeRotation(data.rotation);
 
   useEffect(() => {
     updateNodeInternals(id);
   }, [id, rotation, updateNodeInternals]);
+
+  useEffect(() => {
+    if (!contextMenu) return undefined;
+
+    const closeMenu = () => setContextMenu(null);
+    window.addEventListener('click', closeMenu);
+    window.addEventListener('keydown', closeMenu);
+    return () => {
+      window.removeEventListener('click', closeMenu);
+      window.removeEventListener('keydown', closeMenu);
+    };
+  }, [contextMenu]);
+
+  useEffect(() => () => {
+    if (contextTimerRef.current !== null) {
+      window.clearTimeout(contextTimerRef.current);
+    }
+  }, []);
 
   if (!def) {
     return <div className="hydraulic-node hydraulic-node--missing">?</div>;
@@ -73,14 +99,59 @@ function HydraulicNodeComponent({ id, data, selected }: NodeProps<HydraulicNodeD
     rotation,
   );
 
-  const stopActionPropagation = (event: MouseEvent<HTMLButtonElement>) => {
-    event.stopPropagation();
+  const clearContextTimer = () => {
+    if (contextTimerRef.current === null) return;
+    window.clearTimeout(contextTimerRef.current);
+    contextTimerRef.current = null;
   };
+
+  const onNodeMouseDown = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 2) return;
+    event.preventDefault();
+    event.stopPropagation();
+    clearContextTimer();
+    const rect = event.currentTarget.getBoundingClientRect();
+    const menuPosition = {
+      x: event.clientX - rect.left,
+      y: event.clientY - rect.top,
+    };
+    contextTimerRef.current = window.setTimeout(() => {
+      setContextMenu(menuPosition);
+      contextTimerRef.current = null;
+    }, LONG_RIGHT_CLICK_MS);
+  };
+
+  const onNodeMouseUp = (event: MouseEvent<HTMLDivElement>) => {
+    if (event.button !== 2) return;
+    event.preventDefault();
+    event.stopPropagation();
+    clearContextTimer();
+  };
+
+  const contextMenuActions = [
+    {
+      id: 'rotate',
+      label: 'Повернуть',
+      onSelect: () => rotateNode(id),
+    },
+    {
+      id: 'delete',
+      label: 'Удалить',
+      danger: true,
+      onSelect: () => deleteNode(id),
+    },
+  ];
 
   return (
     <div
       className={`hydraulic-node${selected ? ' is-selected' : ''}`}
       style={{ width: rotatedSize.width, height: rotatedSize.height }}
+      onContextMenu={(event) => {
+        event.preventDefault();
+        event.stopPropagation();
+      }}
+      onMouseDown={onNodeMouseDown}
+      onMouseUp={onNodeMouseUp}
     >
       <div
         className="hydraulic-node__symbol"
@@ -94,34 +165,26 @@ function HydraulicNodeComponent({ id, data, selected }: NodeProps<HydraulicNodeD
         {Icon ? <Icon /> : null}
       </div>
 
-      {selected && (
-        <div className="hydraulic-node__actions nodrag nopan">
-          <button
-            type="button"
-            className="node-action"
-            title="Повернуть"
-            aria-label="Повернуть элемент"
-            onMouseDown={stopActionPropagation}
-            onClick={(event) => {
-              event.stopPropagation();
-              rotateNode(id);
-            }}
-          >
-            ↻
-          </button>
-          <button
-            type="button"
-            className="node-action node-action--danger"
-            title="Удалить"
-            aria-label="Удалить элемент"
-            onMouseDown={stopActionPropagation}
-            onClick={(event) => {
-              event.stopPropagation();
-              deleteNode(id);
-            }}
-          >
-            ×
-          </button>
+      {contextMenu && (
+        <div
+          className="hydraulic-node__context-menu nodrag nopan"
+          style={{ left: contextMenu.x, top: contextMenu.y }}
+          onClick={(event) => event.stopPropagation()}
+          onMouseDown={(event) => event.stopPropagation()}
+        >
+          {contextMenuActions.map((action) => (
+            <button
+              key={action.id}
+              type="button"
+              className={`context-menu__item${action.danger ? ' context-menu__item--danger' : ''}`}
+              onClick={() => {
+                setContextMenu(null);
+                action.onSelect();
+              }}
+            >
+              {action.label}
+            </button>
+          ))}
         </div>
       )}
 

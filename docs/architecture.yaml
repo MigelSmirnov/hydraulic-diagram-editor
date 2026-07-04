@@ -35,16 +35,16 @@ modules:
     path: src/features/diagram-editor/components
     responsibility: React UI components for canvas, palette, toolbar and properties panel
     files:
-      DiagramCanvas.tsx: Wraps <ReactFlow>. Wires store to the canvas, drag-drop of new elements, grid, snap, delete key.
+      DiagramCanvas.tsx: Wraps <ReactFlow>. Wires store to the canvas, drag-drop of new elements, CAD-style short right-click repeat placement, grid, snap, delete key.
       Palette.tsx: Left panel. Lists catalog elements grouped by category; each item is draggable onto the canvas.
-      Toolbar.tsx: Top bar. Grid toggle, snap toggle, line-type selector, JSON save/load actions, line legend, clear canvas, load demo template.
+      Toolbar.tsx: Top bar. Grid toggle, snap toggle, line-type selector, JSON save/load actions, PNG export, line legend, clear canvas, load demo template.
       PropertiesPanel.tsx: Right panel. Shows id / type / label of the currently selected node or edge; allows changing an edge line type through the line type catalog.
 
   features/diagram-editor/nodes:
     path: src/features/diagram-editor/nodes
     responsibility: Custom React Flow node components and node type registration
     files:
-      HydraulicNode.tsx: Single generic node. Renders an SVG engineering symbol, optional label and catalog-defined ports.
+      HydraulicNode.tsx: Single generic node. Renders an SVG engineering symbol, optional label, catalog-defined ports and the long-right-click node action menu.
       nodeTypes.ts: Maps React Flow node type keys to components ({ hydraulic: HydraulicNode }).
 
   features/diagram-editor/edges:
@@ -73,11 +73,18 @@ modules:
       diagramJson.ts: Serializes, deserializes, downloads and reads DiagramDocument JSON files. Deserialization validates structure and domain invariants before state replacement.
       index.ts: Public boundary for persistence imports.
 
+  features/diagram-editor/export:
+    path: src/features/diagram-editor/export
+    responsibility: One-way document/image export that does not replace editable project persistence
+    files:
+      exportPng.ts: Captures the React Flow viewport as PNG through html-to-image and downloads it.
+      index.ts: Public boundary for export imports.
+
   features/diagram-editor/store:
     path: src/features/diagram-editor/store
     responsibility: State management for nodes, edges, selected line type and editor settings
     files:
-      diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, showGrid, snapToGrid + React Flow bindings and UI-facing actions.
+      diagramStore.ts: Zustand store. nodes, edges, undo/redo history, selectedLineType, lastElementType, showGrid, snapToGrid + React Flow bindings and UI-facing actions.
       diagramCommands.ts: Pure command functions for add/connect/rotate/delete/update/load/replace behavior. This is the foundation for undo/redo.
       diagramHistory.ts: Pure undo/redo stack helpers for diagram data snapshots. Drag move history is recorded through a checkpoint before React Flow position changes.
 

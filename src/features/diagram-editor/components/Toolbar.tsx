@@ -1,4 +1,4 @@
-import { useRef, type ChangeEvent } from 'react';
+import { useRef, useState, type ChangeEvent } from 'react';
 import { useReactFlow } from 'reactflow';
 import { useDiagramStore } from '../store/diagramStore';
 import { lineTypes } from '../model/lineTypes';
@@ -9,6 +9,7 @@ import {
   readDiagramJsonFile,
   serializeDiagram,
 } from '../persistence';
+import { exportDiagramPng } from '../export';
 
 /**
  * Top toolbar. Editor-wide controls only — no diagram logic beyond calling
@@ -16,6 +17,7 @@ import {
  */
 export function Toolbar() {
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const [isExportingPng, setIsExportingPng] = useState(false);
   const { getViewport, setViewport } = useReactFlow();
 
   const nodes = useDiagramStore((s) => s.nodes);
@@ -73,6 +75,17 @@ export function Toolbar() {
       if (document.viewport) setViewport(document.viewport);
     } catch (error) {
       alert(error instanceof Error ? error.message : 'Не удалось загрузить JSON файл схемы.');
+    }
+  };
+
+  const handleExportPng = async () => {
+    setIsExportingPng(true);
+    try {
+      await exportDiagramPng();
+    } catch (error) {
+      alert(error instanceof Error ? error.message : 'Не удалось экспортировать PNG.');
+    } finally {
+      setIsExportingPng(false);
     }
   };
 
@@ -158,6 +171,9 @@ export function Toolbar() {
         </button>
         <button className="btn" onClick={handleSaveJson}>
           Save JSON
+        </button>
+        <button className="btn" onClick={handleExportPng} disabled={isExportingPng}>
+          {isExportingPng ? 'Exporting...' : 'Export PNG'}
         </button>
         <button className="btn" onClick={() => fileInputRef.current?.click()}>
           Load JSON

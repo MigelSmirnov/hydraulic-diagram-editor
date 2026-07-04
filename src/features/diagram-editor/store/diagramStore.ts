@@ -48,6 +48,7 @@ interface DiagramState {
 
   // --- editor settings ---
   selectedLineType: LineTypeId;
+  lastElementType?: string;
   showGrid: boolean;
   snapToGrid: boolean;
 
@@ -96,6 +97,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
   past: [],
   future: [],
   selectedLineType: DEFAULT_LINE_TYPE,
+  lastElementType: undefined,
   showGrid: false,
   snapToGrid: false,
   showPalette: true,
@@ -125,6 +127,7 @@ export const useDiagramStore = create<DiagramState>((set, get) => ({
       return {
         ...pushDiagramHistory(state, state),
         nodes: nextNodes,
+        lastElementType: type,
       };
     }),
 

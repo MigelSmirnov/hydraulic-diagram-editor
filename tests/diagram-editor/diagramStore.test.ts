@@ -17,6 +17,7 @@ describe('diagramStore history integration', () => {
       past: [],
       future: [],
       selectedLineType: 'pipe_cold_water',
+      lastElementType: undefined,
       showGrid: false,
       snapToGrid: false,
       showPalette: true,
@@ -46,5 +47,18 @@ describe('diagramStore history integration', () => {
 
     useDiagramStore.getState().redo();
     expect(useDiagramStore.getState().nodes[0].position).toEqual({ x: 80, y: 40 });
+  });
+
+  it('remembers the last added element type for repeat placement', () => {
+    useDiagramStore.getState().addElement('check-valve', { x: 20, y: 30 });
+
+    expect(useDiagramStore.getState().lastElementType).toBe('check-valve');
+    expect(useDiagramStore.getState().nodes[0]).toMatchObject({
+      type: 'hydraulic',
+      position: { x: 20, y: 30 },
+      data: {
+        type: 'check-valve',
+      },
+    });
   });
 });

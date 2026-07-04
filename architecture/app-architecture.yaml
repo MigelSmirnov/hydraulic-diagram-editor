@@ -252,6 +252,7 @@ modules:
       - nodes
       - edges
       - selected line type
+      - last element type
       - grid settings
       - panel visibility
       - editor actions
@@ -314,6 +315,7 @@ modules:
       - editor state
       - catalog definitions
       - user canvas events
+      - right-click repeat placement events
     data_out:
       - rendered canvas
       - React Flow changes
@@ -324,6 +326,7 @@ modules:
       - clean domain-to-react-flow adapters
       - transform handles
       - route editing
+      - additional node context menu actions
     invariant_files:
       - src/features/diagram-editor/model/diagramValidation.ts
     config_files:
@@ -338,6 +341,7 @@ modules:
       - palette grouping
       - properties panel rendering
       - save/load button wiring
+      - export button wiring
     exposes:
       - Toolbar
       - Palette
@@ -347,6 +351,7 @@ modules:
       - diagram-state
       - diagram-domain-model
       - diagram-persistence
+      - diagram-export
       - react-flow-canvas
     used_by:
       - app-shell
@@ -364,6 +369,34 @@ modules:
       - editable properties
       - export controls
       - validation feedback panel
+    invariant_files: []
+    config_files: []
+
+  - id: diagram-export
+    name: Diagram Export
+    layer: infrastructure
+    responsibility: Owns one-way image/document export that does not replace editable project persistence.
+    owns:
+      - PNG export adapter
+      - exported image filename defaults
+      - DOM capture boundary
+    exposes:
+      - exportDiagramPng
+    depends_on:
+      - react-flow-canvas
+    used_by:
+      - diagram-ui
+    data_in:
+      - rendered React Flow viewport
+    data_out:
+      - downloaded PNG image
+    forbidden_dependencies:
+      - diagram-persistence-internals
+      - diagram-state-internals
+    extension_points:
+      - SVG export
+      - PDF export
+      - export sizing options
     invariant_files: []
     config_files: []
 

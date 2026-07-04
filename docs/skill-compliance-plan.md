@@ -58,3 +58,4 @@ Status: done for the current editor scope. Core add/connect/rotate/delete/update
 - Add tests for JSON import/export and invalid connection cases.
 - Add tests for delete-node-removes-edges behavior.
 - Add validation coverage for custom connection rules and required elements.
+- Extend one-way export beyond PNG to SVG/PDF when needed.
