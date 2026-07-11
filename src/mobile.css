@@ -1,6 +1,9 @@
 /* Mobile editor layout ------------------------------------------------------ */
 
-.mobile-sheet,
+.mobile-sheet {
+  display: contents;
+}
+
 .mobile-sheet-backdrop,
 .mobile-sheet__handle {
   display: none;
