@@ -1,0 +1,169 @@
+{
+  "schemaVersion": 1,
+  "nodes": [
+    {
+      "id": "loop-boiler",
+      "type": "hydraulic",
+      "position": { "x": 80, "y": 180 },
+      "data": {
+        "type": "indirect-boiler",
+        "label": "Бойлер косвенного нагрева",
+        "rotation": 180
+      }
+    },
+    {
+      "id": "loop-supply-flange",
+      "type": "hydraulic",
+      "position": { "x": 300, "y": 150 },
+      "data": {
+        "type": "flange",
+        "label": "Подача во внешний контур",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "loop-pump",
+      "type": "hydraulic",
+      "position": { "x": 430, "y": 150 },
+      "data": {
+        "type": "circulation-pump",
+        "label": "Насос загрузки бойлера",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "loop-three-way",
+      "type": "hydraulic",
+      "position": { "x": 580, "y": 132 },
+      "data": {
+        "type": "three-way-actuated-valve",
+        "label": "Трехходовой клапан",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "loop-return-flange",
+      "type": "hydraulic",
+      "position": { "x": 580, "y": 330 },
+      "data": {
+        "type": "flange",
+        "label": "Обратка из внешнего контура",
+        "rotation": 180
+      }
+    },
+    {
+      "id": "loop-balancing",
+      "type": "hydraulic",
+      "position": { "x": 420, "y": 330 },
+      "data": {
+        "type": "balancing-valve",
+        "label": "Балансировочный вентиль",
+        "rotation": 180
+      }
+    },
+    {
+      "id": "loop-return-junction",
+      "type": "hydraulic",
+      "position": { "x": 315, "y": 357 },
+      "data": {
+        "type": "junction",
+        "label": "Узел обратки",
+        "rotation": 0
+      }
+    },
+    {
+      "id": "loop-expansion",
+      "type": "hydraulic",
+      "position": { "x": 280, "y": 450 },
+      "data": {
+        "type": "expansion-tank",
+        "label": "Расширительный бак",
+        "rotation": 180
+      }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-boiler-supply-flange",
+      "source": "loop-boiler",
+      "sourceHandle": "solar_supply",
+      "target": "loop-supply-flange",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-supply-flange-pump",
+      "source": "loop-supply-flange",
+      "sourceHandle": "outlet",
+      "target": "loop-pump",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-pump-three-way",
+      "source": "loop-pump",
+      "sourceHandle": "outlet",
+      "target": "loop-three-way",
+      "targetHandle": "left",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-three-way-external",
+      "source": "loop-three-way",
+      "sourceHandle": "bottom",
+      "target": "loop-return-flange",
+      "targetHandle": "outlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-return-flange-balancing",
+      "source": "loop-return-flange",
+      "sourceHandle": "inlet",
+      "target": "loop-balancing",
+      "targetHandle": "outlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    },
+    {
+      "id": "edge-balancing-junction",
+      "source": "loop-balancing",
+      "sourceHandle": "inlet",
+      "target": "loop-return-junction",
+      "targetHandle": "right",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    },
+    {
+      "id": "edge-junction-boiler-return",
+      "source": "loop-return-junction",
+      "sourceHandle": "left",
+      "target": "loop-boiler",
+      "targetHandle": "solar_return",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    },
+    {
+      "id": "edge-expansion-junction",
+      "source": "loop-expansion",
+      "sourceHandle": "connection",
+      "target": "loop-return-junction",
+      "targetHandle": "bottom",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    }
+  ],
+  "viewport": {
+    "x": 20,
+    "y": 20,
+    "zoom": 0.95
+  },
+  "settings": {
+    "showGrid": false,
+    "snapToGrid": false,
+    "activeLineType": "pipe_solar_supply"
+  }
+}
