@@ -35,20 +35,6 @@ export default function App() {
       <div className="app-shell">
         <Toolbar />
         <div className="app-body" style={{ gridTemplateColumns }}>
-          <DiagramCanvas />
-
-          {showPalette && (
-            <div className="mobile-sheet mobile-sheet--palette">
-              <Palette />
-            </div>
-          )}
-
-          {showProperties && (
-            <div className="mobile-sheet mobile-sheet--properties">
-              <PropertiesPanel />
-            </div>
-          )}
-
           {(showPalette || showProperties) && (
             <button
               className="mobile-sheet-backdrop"
@@ -56,6 +42,20 @@ export default function App() {
               aria-label="Закрыть панель"
               onClick={closePanels}
             />
+          )}
+
+          {showPalette && (
+            <div className="mobile-sheet mobile-sheet--palette">
+              <Palette />
+            </div>
+          )}
+
+          <DiagramCanvas />
+
+          {showProperties && (
+            <div className="mobile-sheet mobile-sheet--properties">
+              <PropertiesPanel />
+            </div>
           )}
         </div>
       </div>
