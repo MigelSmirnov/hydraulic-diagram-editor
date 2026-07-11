@@ -1,0 +1,194 @@
+/* Mobile editor layout ------------------------------------------------------ */
+
+.mobile-sheet,
+.mobile-sheet-backdrop,
+.mobile-sheet__handle {
+  display: none;
+}
+
+.mobile-sheet > .palette,
+.mobile-sheet > .properties {
+  height: 100%;
+}
+
+@media (max-width: 760px) {
+  html,
+  body,
+  #root {
+    height: 100dvh;
+    overflow: hidden;
+  }
+
+  .app-shell {
+    height: 100dvh;
+    grid-template-rows: auto minmax(0, 1fr);
+  }
+
+  .app-body {
+    position: relative;
+    display: block;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .diagram-canvas {
+    position: absolute;
+    inset: 0;
+    height: auto;
+  }
+
+  .toolbar {
+    flex-wrap: nowrap;
+    gap: 6px;
+    padding: 7px 8px;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scrollbar-width: none;
+  }
+
+  .toolbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .toolbar__brand {
+    flex: none;
+  }
+
+  .toolbar__brand > span:last-child {
+    display: none;
+  }
+
+  .toolbar__group {
+    flex: none;
+    gap: 6px;
+  }
+
+  .toolbar__group--end {
+    margin-left: 0;
+  }
+
+  .toolbar__field {
+    flex: none;
+  }
+
+  .toolbar__field > span,
+  .line-legend {
+    display: none;
+  }
+
+  .toolbar__field select {
+    max-width: 148px;
+    height: 38px;
+    padding: 6px 8px;
+  }
+
+  .btn {
+    min-height: 38px;
+    padding: 7px 10px;
+    font-size: 12px;
+    touch-action: manipulation;
+  }
+
+  .toolbar__group:nth-of-type(2) {
+    display: none;
+  }
+
+  .mobile-sheet-backdrop {
+    display: block;
+    position: absolute;
+    inset: 0;
+    z-index: 25;
+    padding: 0;
+    border: 0;
+    background: rgba(15, 23, 42, 0.28);
+  }
+
+  .mobile-sheet {
+    display: block;
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    z-index: 30;
+    height: min(68dvh, 560px);
+    min-height: 280px;
+    border-radius: 18px 18px 0 0;
+    overflow: hidden;
+    background: var(--panel);
+    box-shadow: 0 -14px 40px rgba(15, 23, 42, 0.2);
+  }
+
+  .mobile-sheet__handle {
+    display: block;
+    width: 42px;
+    height: 4px;
+    margin: 8px auto 0;
+    border-radius: 999px;
+    background: var(--border-strong);
+  }
+
+  .mobile-sheet .palette,
+  .mobile-sheet .properties {
+    border: 0;
+  }
+
+  .palette__scroll {
+    padding-bottom: calc(18px + env(safe-area-inset-bottom));
+  }
+
+  .palette__item {
+    width: 100%;
+    min-height: 52px;
+    text-align: left;
+    touch-action: manipulation;
+  }
+
+  .palette__hint {
+    display: none;
+  }
+
+  .properties {
+    padding-top: 8px;
+  }
+
+  .react-flow__controls {
+    bottom: calc(12px + env(safe-area-inset-bottom));
+    left: 10px;
+  }
+
+  .react-flow__controls-button {
+    width: 36px;
+    height: 36px;
+  }
+
+  .react-flow__handle.hydraulic-handle {
+    width: 14px;
+    height: 14px;
+    opacity: 0.32;
+  }
+
+  .hydraulic-node.is-selected .react-flow__handle.hydraulic-handle,
+  .react-flow__handle.hydraulic-handle.connecting,
+  .react-flow__handle.hydraulic-handle.valid {
+    opacity: 1;
+  }
+
+  .edge-action {
+    width: 34px;
+    height: 34px;
+    font-size: 20px;
+  }
+}
+
+@media (max-width: 420px) {
+  .toolbar__logo {
+    width: 32px;
+    height: 32px;
+  }
+
+  .toolbar__group--end .btn:nth-child(3),
+  .toolbar__group--end .btn:nth-child(4),
+  .toolbar__group--end .btn:last-child {
+    display: none;
+  }
+}
