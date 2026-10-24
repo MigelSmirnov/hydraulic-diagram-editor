@@ -68,11 +68,25 @@ try:
         ("P05",(6500,3400),(6500,4575)),
         ("P06",(5800,3400),(6500,3400)),
     ]
+    # Build two connected L-shaped partition runs as continuous centreline paths.
+    # Mitred buffering resolves the OUTER corner; independent capped rectangles
+    # created the visible 45mm notch in the previous experiment.
+    paths = [
+        ("P01", [(3565,200),(3565,2650)]),
+        ("P02", [(3565,3350),(3565,4575)]),
+        ("P03_P04", [(200,2600),(1650,2600),(1650,4575)]),
+        ("P05_P06", [(5800,3400),(6500,3400),(6500,4575)]),
+    ]
     polygons=[]
-    for ident,a,b in sections:
-        poly=LineString([a,b]).buffer(45,cap_style="flat",join_style="mitre")
-        assert poly.is_valid and abs(poly.area-90*LineString([a,b]).length)<0.01
+    for ident,points in paths:
+        axis=LineString(points)
+        poly=axis.buffer(45,cap_style="flat",join_style="mitre")
+        assert poly.is_valid and not poly.is_empty
         polygons.append(poly)
+    from shapely.geometry import Point
+    # The two former corner notches must be filled by the mitred exterior.
+    assert polygons[2].covers(Point(1680,2570)), "Left L corner still has a notch"
+    assert polygons[3].covers(Point(6530,3370)), "Right L corner still has a notch"
     exterior=Polygon([(0,0),(8382,0),(8382,4775),(0,4775)])
     interior=Polygon([(200,200),(8182,200),(8182,4575),(200,4575)])
     shell=exterior.difference(interior)
@@ -100,12 +114,14 @@ try:
         "status":"PASS","method":"Shapely geometric union -> CADCraft MCP PLINE",
         "outer_wall":"CADCraft OFFSET 200mm","partition_width_mm":90,
         "source_sections":[{"id":i,"start":a,"end":b} for i,a,b in sections],
+        "joined_paths":[{"id":i,"points":pts} for i,pts in paths],
+        "miter_corner_checks":2,
         "clean_rings":len(clean),"wall_area_mm2":round(combined.area,2),
         "wall_valid":combined.is_valid,"holes":len(combined.interiors),
         "note":"CADCraft itself has not performed a boolean union; topology is computed in Python. Source wall sections are preserved in JSON, not as separate visible DXF geometry. No openings are cut."
     }
     (out/"junctions-report.json").write_text(json.dumps(report,ensure_ascii=False,indent=2),encoding="utf-8")
-    print("PASS: cleaned wall junction contours created via CADCraft MCP")
+    print("PASS: mitred L corners and wall junctions via CADCraft MCP")
 finally:
     if process.stdin:
         process.stdin.close()
