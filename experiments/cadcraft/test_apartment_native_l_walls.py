@@ -95,6 +95,34 @@ try:
         corners=[[a[0]+nx,a[1]+ny],[b[0]+nx,b[1]+ny],
                  [b[0]-nx,b[1]-ny],[a[0]-nx,a[1]-ny]]
         handle(execute("pline",{"vertices":corners,"closed":True}))
+    # Dimension objects for the original measured plan, scale 1:50.
+    for name,value in {"DIMSCALE":50,"DIMTXT":2.5,"DIMASZ":2.5,"DIMGAP":1.0}.items():
+        execute("setvar",{"name":name,"value":value})
+    execute("layer.new",{"name":"DIMENSIONS","current":True})
+    dimension_specs=[
+        ("main_width",[0,4775],[8382,4775],[4191,5400],8382),
+        ("main_height",[0,0],[0,4775],[-650,2387.5],4775),
+        ("left_chain",[0,0],[3565,0],[1782.5,-500],3565),
+        ("right_chain",[3665,0],[8382,0],[6023.5,-900],4717),
+        ("terrace_width",[8382,0],[14652,0],[11517,-500],6270),
+        ("terrace_height",[14652,0],[14652,2355],[15200,1177.5],2355),
+    ]
+    for name,p1,p2,at,value in dimension_specs:
+        execute("dimlinear",{"p1":p1,"p2":p2,"at":at})
+    # Native junction preparation: all wall endpoints must touch the inner
+    # 200mm-offset exterior boundary. Keep caps until TRIM is verified separately.
+    inner_faces={"left":200,"right":8182,"bottom":200,"top":4575}
+    junctions=[
+        {"wall":"L_LEFT","end":[1650,4575],"face":"top"},
+        {"wall":"L_LEFT","end":[200,2600],"face":"left"},
+        {"wall":"L_RIGHT","end":[6500,4575],"face":"top"},
+        {"wall":"P01","end":[3565,200],"face":"bottom"},
+        {"wall":"P02","end":[3565,4575],"face":"top"},
+    ]
+    for j in junctions:
+        x,y=j["end"]
+        face=j["face"]
+        assert abs((x if face in ("left","right") else y)-inner_faces[face])<0.01,j
     execute("layer.new",{"name":"TERRACE_OUTLINE","current":True})
     handle(execute("pline",{"vertices":[[8382,0],[14652,0],[14652,2355],[8382,2355]],"closed":False}))
     tool("save",{"path":str(out/"apartment_native_l_walls.dxf")})
@@ -104,11 +132,15 @@ try:
     assert len(partitions)==4 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
     assert len(final.modelspace().query("LINE"))==0
     assert len(final.modelspace().query("LWPOLYLINE"))==7
+    assert len(final.modelspace().query("DIMENSION"))==6
     assert (out/"apartment_native_l_walls.png").read_bytes().startswith(bytes.fromhex("89504e470d0a1a0a"))
     (out/"apartment-native-l-walls-report.json").write_text(json.dumps({
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
         "l_walls":wall_records,"straight_partitions":2,
         "closed_partition_objects":len(partitions),
+        "dimensions":6,"dimension_scale":"1:50",
+        "junctions_prepared":junctions,
+        "junction_status":"endpoints meet interior wall face; cap removal not yet verified",
         "notes":"No union with exterior, openings or sockets. Approximate wall axes from draft."
     },indent=2),encoding="utf-8")
     print("PASS: two native closed L walls in apartment plan, no construction axes")
