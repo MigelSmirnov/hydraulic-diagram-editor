@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1",
+  "id": "l_partition",
+  "title": "l partition",
+  "status": "tested",
+  "units": "mm",
+  "inputs": [
+    "axis_points",
+    "width_mm",
+    "side_left",
+    "side_right"
+  ],
+  "command_sequence": [
+    "pline",
+    "offset",
+    "erase",
+    "line",
+    "pedit"
+  ],
+  "next_recipe": "03-wall-junction",
+  "validation_required": true,
+  "stop_on_validation_failure": true,
+  "source": "02-l-partition/recipe.md",
+  "note": "Read recipe.md for exact command arguments and geometry checks; this JSON is an index, not an executable MCP workflow."
+}
