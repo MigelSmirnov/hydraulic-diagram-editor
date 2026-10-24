@@ -64,6 +64,8 @@ jobs:
         run: python experiments/cadcraft/test_apartment_checkpoint.py
       - name: Validate P01 junction and dimension to wall face
         run: python experiments/cadcraft/test_apartment_p01_junction.py
+      - name: Integrate P01 TRIM junction into apartment checkpoint
+        run: python experiments/cadcraft/test_apartment_p01_integrated.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
