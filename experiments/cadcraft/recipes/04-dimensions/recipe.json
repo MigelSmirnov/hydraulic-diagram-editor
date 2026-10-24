@@ -1,0 +1,22 @@
+{
+  "schema_version": "0.1",
+  "id": "dimensions",
+  "title": "dimensions",
+  "status": "tested",
+  "units": "mm",
+  "inputs": [
+    "face_points",
+    "annotation_scale",
+    "dimension_positions"
+  ],
+  "command_sequence": [
+    "setvar",
+    "layer.new",
+    "dimlinear"
+  ],
+  "next_recipe": "05-double-socket",
+  "validation_required": true,
+  "stop_on_validation_failure": true,
+  "source": "04-dimensions/recipe.md",
+  "note": "Read recipe.md for exact command arguments and geometry checks; this JSON is an index, not an executable MCP workflow."
+}
