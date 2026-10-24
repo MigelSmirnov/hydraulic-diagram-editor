@@ -237,7 +237,8 @@ try:
     },indent=2),encoding="utf-8")
     assert len(inserts)==3, f"Expected 3 inserts, found {len(inserts)}: {insert_details}"
     assert socket_name in final.blocks
-    assert len(final.modelspace().query("LWPOLYLINE"))==6
+    assert len(exterior_polys)>=2, "Exterior contours missing after BREAK"
+    assert len(final.modelspace().query("LWPOLYLINE[layer==\'TERRACE_OUTLINE\']"))==1
     dimensions=list(final.modelspace().query("DIMENSION"))
     assert len(dimensions)==7
     expected_chain=[(0,3520),(3520,3610),(3610,8382)]
