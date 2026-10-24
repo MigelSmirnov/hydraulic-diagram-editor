@@ -40,6 +40,8 @@ jobs:
           test -s cadcraft-test-output/pump_demo.png
       - name: Generate CAD blocks directly via MCP
         run: python experiments/cadcraft/test_mcp.py
+      - name: Generate apartment and terrace directly via MCP
+        run: python experiments/cadcraft/test_apartment_mcp.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
