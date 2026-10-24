@@ -60,6 +60,8 @@ jobs:
         run: python experiments/cadcraft/test_apartment_native_l_walls.py
       - name: Test native TRIM at partition to exterior junction
         run: python experiments/cadcraft/test_junction_trim.py
+      - name: Build apartment checkpoint with dimensions and sockets
+        run: python experiments/cadcraft/test_apartment_checkpoint.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
