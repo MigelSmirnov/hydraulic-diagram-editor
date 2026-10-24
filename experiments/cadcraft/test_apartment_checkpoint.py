@@ -153,9 +153,12 @@ try:
         "scale":"1:50","symbol":socket_name,"sockets":sockets,
         "dynamic_attachment":False,"geometry_verified_against_original":False
     },indent=2),encoding="utf-8")
+    before_save=tool("inspect_drawing",{"entities":True})
+    (out/"checkpoint-before-save.json").write_text(json.dumps(before_save,indent=2),encoding="utf-8")
+    print("CHECKPOINT_BEFORE_SAVE="+json.dumps(before_save)[:1600],flush=True)
     tool("save",{"path":str(out/"apartment_checkpoint.dxf")})
     execute("plot",{"path":str(out/"apartment_checkpoint.png"),"output":"png","layout":"Model","paper":"A3","landscape":True,"fit":True,"plotArea":"extents"})
-    final=ezdxf.readfile(out/"apartment_native_l_walls.dxf")
+    final=ezdxf.readfile(out/"apartment_checkpoint.dxf")
     partitions=list(final.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']"))
     assert len(partitions)==4 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
     assert len(final.modelspace().query("LINE"))==0
@@ -171,7 +174,7 @@ try:
     assert socket_name in final.blocks
     assert len(final.modelspace().query("LWPOLYLINE"))==7
     assert len(final.modelspace().query("DIMENSION"))==6
-    assert (out/"apartment_native_l_walls.png").read_bytes().startswith(bytes.fromhex("89504e470d0a1a0a"))
+    assert (out/"apartment_checkpoint.png").read_bytes().startswith(bytes.fromhex("89504e470d0a1a0a"))
     (out/"apartment-checkpoint-report.json").write_text(json.dumps({
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
         "l_walls":wall_records,"straight_partitions":2,
