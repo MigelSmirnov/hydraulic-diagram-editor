@@ -57,6 +57,8 @@ try:
     execute("layer.new",{"name":"EXTERIOR_200","current":True})
     outer=handle(execute("pline",{"vertices":[[0,0],[8382,0],[8382,4775],[0,4775]],"closed":True}))
     inner=handle(execute("offset",{"handle":outer,"distance":200,"side":[4191,2387]}))
+    break_result=execute("break",{"handle":inner,"p1":[3520,200],"p2":[3610,200]})
+    print("INTEGRATED_BREAK="+json.dumps(break_result),flush=True)
     execute("layer.new",{"name":"PARTITIONS_90","current":True})
     l_axes=[
         ("L_LEFT",[[200,2600],[1650,2600],[1650,4575]], [900,2800], [900,2300]),
@@ -161,6 +163,22 @@ try:
     tool("save",{"path":str(out/"apartment_p01_integrated.dxf")})
     execute("plot",{"path":str(out/"apartment_p01_integrated.png"),"output":"png","layout":"Model","paper":"A3","landscape":True,"fit":True,"plotArea":"extents"})
     final=ezdxf.readfile(out/"apartment_p01_integrated.dxf")
+    exterior_polys=list(final.modelspace().query("LWPOLYLINE[layer=='EXTERIOR_200']"))
+    overlaps=[]
+    for poly in exterior_polys:
+        points=[(float(x),float(y)) for x,y in poly.get_points("xy")]
+        edges=list(zip(points,points[1:]))
+        if poly.closed: edges.append((points[-1],points[0]))
+        for a,b in edges:
+            if abs(a[1]-200)<.01 and abs(b[1]-200)<.01:
+                low,high=sorted((a[0],b[0]))
+                if min(high,3610)-max(low,3520)>.01:
+                    overlaps.append({"handle":poly.dxf.handle,"start":a,"end":b})
+    (out/"integrated-break-debug.json").write_text(json.dumps({
+        "break_result":break_result,"overlaps":overlaps,
+        "exterior_handles":[p.dxf.handle for p in exterior_polys]
+    },indent=2),encoding="utf-8")
+    assert not overlaps,f"Host wall still crosses P01 junction: {overlaps}"
     partitions=list(final.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']"))
     assert len(partitions)==3 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
     p01_lines=list(final.modelspace().query("LINE[layer=='P01_JUNCTION_90']"))
@@ -194,12 +212,12 @@ try:
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
         "l_walls":wall_records,"straight_partitions":2,
         "closed_partition_objects":len(partitions),
-        "p01_junction_edges":len(p01_lines),"p01_trim_results":trim_results,
+        "p01_junction_edges":len(p01_lines),"host_wall_break":break_result,"p01_trim_results":trim_results,
         "dimensions":6,"dimension_scale":"1:50",
         "sockets":3,"socket_block":socket_name,
         "dimension_warning":"P01 left chain now measures 3520 to wall face; right reference 4717 still unresolved",
         "junctions_prepared":junctions,
-        "junction_status":"P01 cap absent and edges TRIMmed; other junction caps remain",
+        "junction_status":"P01 edges TRIMmed and host wall BREAK verified; other junctions remain",
         "notes":"P01 is three LINE edges, not closed LWPOLYLINE. Other junctions remain unfinished; wall axes approximate."
     },indent=2),encoding="utf-8")
     print("PASS: integrated P01 trim, face-based dimension, other walls and sockets preserved")
