@@ -42,6 +42,8 @@ jobs:
         run: python experiments/cadcraft/test_mcp.py
       - name: Generate apartment and terrace directly via MCP
         run: python experiments/cadcraft/test_apartment_mcp.py
+      - name: Generate wall-attached double sockets via MCP
+        run: python experiments/cadcraft/test_electrical_mcp.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
