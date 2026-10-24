@@ -56,6 +56,8 @@ jobs:
         run: python experiments/cadcraft/test_l_wall_tools.py
       - name: Verify closed L wall without construction axis
         run: python experiments/cadcraft/test_l_wall_closed.py
+      - name: Apply native L-wall tools to apartment plan
+        run: python experiments/cadcraft/test_apartment_native_l_walls.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
