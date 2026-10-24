@@ -74,6 +74,11 @@ try:
         handles_by_layer[layer] = []
         for start, end in segments:
             handles_by_layer[layer].append(handle(execute("line", {"points":[start,end]})))
+    # Non-annotative architectural dimension profile for a 1:50 paper scale.
+    # Paper text/arrow 2.5 mm => 125 drawing mm at 1:50.
+    dimension_vars = {"DIMSCALE":50, "DIMTXT":2.5, "DIMASZ":2.5, "DIMGAP":1.0}
+    for name, value in dimension_vars.items():
+        execute("setvar", {"name":name,"value":value})
     # True CAD dimension entities, rather than drawn text.
     dimensions = [
         ("main_width", [0,4775], [8382,4775], [4191,5400], 8382),
@@ -104,7 +109,7 @@ try:
     (out / "apartment-mcp-report.json").write_text(json.dumps({
         "status":"PASS", "units":"mm", "main_size":[8382,4775],
         "terrace_size":[6270,2355], "lines":len(lines),
-        "layers":list(geometry), "uncertainty":"Interior partitions are approximate",
+        "layers":list(geometry), "dimension_profile":dimension_vars, "print_scale":"1:50", "uncertainty":"Interior partitions are approximate",
         "handles":handles_by_layer, "dimensions":dimension_results, "inspection":summary,
     }, indent=2), encoding="utf-8")
     print(f"PASS: apartment CADCraft MCP generated {len(lines)} lines, DXF and PNG")
