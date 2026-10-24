@@ -1,0 +1,23 @@
+{
+  "schema_version": "0.1",
+  "id": "wall_junction",
+  "title": "wall junction",
+  "status": "partial",
+  "units": "mm",
+  "inputs": [
+    "host_handle",
+    "partition_handle",
+    "junction_left",
+    "junction_right"
+  ],
+  "command_sequence": [
+    "break",
+    "trim",
+    "erase"
+  ],
+  "next_recipe": "04-dimensions",
+  "validation_required": true,
+  "stop_on_validation_failure": true,
+  "source": "03-wall-junction/recipe.md",
+  "note": "Read recipe.md for exact command arguments and geometry checks; this JSON is an index, not an executable MCP workflow."
+}
