@@ -72,12 +72,27 @@ try:
     execute("plot",{"path":str(out/"junction_after.png"),"output":"png","layout":"Model","paper":"A3","landscape":True,"fit":True,"plotArea":"extents"})
     doc=ezdxf.readfile(out/"junction_after.dxf")
     lines={e.dxf.handle:e for e in doc.modelspace().query("LINE")}
-    assert cap not in lines
-    assert a in lines and b in lines and boundary in lines
-    for h in (a,b):
-        e=lines[h]
-        ys=sorted([float(e.dxf.start.y),float(e.dxf.end.y)])
-        assert abs(ys[0]-200)<0.01 and abs(ys[1]-1800)<0.01,(h,ys)
+    # TRIM may replace source handles or split entities. Check actual geometry.
+    entities=[{
+        "handle":h,
+        "start":[float(e.dxf.start.x),float(e.dxf.start.y)],
+        "end":[float(e.dxf.end.x),float(e.dxf.end.y)]
+    } for h,e in lines.items()]
+    print("TRIM_RESULT_GEOMETRY="+json.dumps(entities),flush=True)
+    print("TRIM_COMMAND_RESULTS="+json.dumps(trims),flush=True)
+    (out/"junction-debug.json").write_text(json.dumps({
+        "original_handles":{"boundary":boundary,"left":a,"right":b,"cap":cap},
+        "entities":entities,"trim_results":trims
+    },indent=2),encoding="utf-8")
+    def same_segment(e,p,q,tol=0.01):
+        a=(float(e.dxf.start.x),float(e.dxf.start.y))
+        b=(float(e.dxf.end.x),float(e.dxf.end.y))
+        def close(u,v): return all(abs(x-y)<tol for x,y in zip(u,v))
+        return (close(a,p) and close(b,q)) or (close(a,q) and close(b,p))
+    assert any(same_segment(e,(0,200),(3000,200)) for e in lines.values()), "Exterior face missing"
+    for x in (955,1045):
+        assert any(same_segment(e,(x,200),(x,1800)) for e in lines.values()), f"Trimmed face x={x} missing"
+    assert not any(same_segment(e,(955,200),(1045,200)) for e in lines.values()), "Cap still present"
     assert (out/"junction_after.png").read_bytes().startswith(bytes.fromhex("89504e470d0a1a0a"))
     (out/"junction-trim-report.json").write_text(json.dumps({
         "status":"PASS","trim_results":trims,"wall_face_y":200,
