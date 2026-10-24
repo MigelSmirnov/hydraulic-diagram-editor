@@ -39,9 +39,13 @@ def execute(command, params):
     return tool("execute", {"command": command, "params": params})
 
 def handle(result):
-    if not isinstance(result, dict) or not isinstance(result.get("handle"), str):
-        raise RuntimeError(f"Expected entity handle: {result}")
-    return result["handle"]
+    if isinstance(result, dict):
+        if isinstance(result.get("handle"), str):
+            return result["handle"]
+        handles = result.get("handles")
+        if isinstance(handles, list) and len(handles) == 1 and isinstance(handles[0], str):
+            return handles[0]
+    raise RuntimeError(f"Expected exactly one entity handle: {result}")
 
 try:
     rpc("initialize", {"protocolVersion":"2025-06-18","capabilities":{},"clientInfo":{"name":"hydraulic-cadcraft-smoke","version":"0.1"}})
