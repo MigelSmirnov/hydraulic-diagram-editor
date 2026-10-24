@@ -57,8 +57,47 @@ try:
     execute("layer.new",{"name":"EXTERIOR_200","current":True})
     outer=handle(execute("pline",{"vertices":[[0,0],[8382,0],[8382,4775],[0,4775]],"closed":True}))
     inner=handle(execute("offset",{"handle":outer,"distance":200,"side":[4191,2387]}))
-    break_result=execute("break",{"handle":inner,"p1":[3520,200],"p2":[3610,200]})
-    print("INTEGRATED_BREAK="+json.dumps(break_result),flush=True)
+    # Break all five host-wall junctions, resolving the current polyline
+    # handle after every mutation. BREAK can replace/split the original handle.
+    break_specs=[
+        ("P01_BOTTOM",(3520,200),(3610,200),"bottom"),
+        ("L_LEFT_LEFT",(200,2555),(200,2645),"left"),
+        ("L_LEFT_TOP",(1605,4575),(1695,4575),"top"),
+        ("L_RIGHT_TOP",(6455,4575),(6545,4575),"top"),
+        ("P02_TOP",(3520,4575),(3610,4575),"top"),
+    ]
+    break_records=[]
+    def segments_of(poly):
+        points=[(float(x),float(y)) for x,y in poly.get_points("xy")]
+        pairs=list(zip(points,points[1:]))
+        if poly.closed:
+            pairs.append((points[-1],points[0]))
+        return pairs
+    def covers_gap(poly,p1,p2):
+        for a,b in segments_of(poly):
+            if abs(p1[0]-p2[0])<.01:
+                if abs(a[0]-p1[0])<.01 and abs(b[0]-p1[0])<.01:
+                    lo,hi=sorted((a[1],b[1]))
+                    if lo<=min(p1[1],p2[1])+.01 and hi>=max(p1[1],p2[1])-.01:
+                        return True
+            else:
+                if abs(a[1]-p1[1])<.01 and abs(b[1]-p1[1])<.01:
+                    lo,hi=sorted((a[0],b[0]))
+                    if lo<=min(p1[0],p2[0])+.01 and hi>=max(p1[0],p2[0])-.01:
+                        return True
+        return False
+    for label,p1,p2,face in break_specs:
+        tool("save",{"path":str(out/"break_stage_before.dxf")})
+        stage=ezdxf.readfile(out/"break_stage_before.dxf")
+        candidates=[p.dxf.handle for p in stage.modelspace().query("LWPOLYLINE[layer=='EXTERIOR_200']") if covers_gap(p,p1,p2)]
+        assert len(candidates)==1, f"{label}: expected one host edge, got {candidates}"
+        result=execute("break",{"handle":candidates[0],"p1":list(p1),"p2":list(p2)})
+        tool("save",{"path":str(out/"break_stage_after.dxf")})
+        after=ezdxf.readfile(out/"break_stage_after.dxf")
+        remaining=[p.dxf.handle for p in after.modelspace().query("LWPOLYLINE[layer=='EXTERIOR_200']") if covers_gap(p,p1,p2)]
+        assert not remaining, f"{label}: host edge still spans junction {remaining}"
+        break_records.append({"junction":label,"face":face,"points":[p1,p2],"old_handle":candidates[0],"result":result})
+    print("INTEGRATED_BREAKS="+json.dumps(break_records),flush=True)
     execute("layer.new",{"name":"PARTITIONS_90","current":True})
     l_axes=[
         ("L_LEFT",[[200,2600],[1650,2600],[1650,4575]], [900,2800], [900,2300]),
@@ -165,21 +204,15 @@ try:
     execute("plot",{"path":str(out/"apartment_p01_integrated.png"),"output":"png","layout":"Model","paper":"A3","landscape":True,"fit":True,"plotArea":"extents"})
     final=ezdxf.readfile(out/"apartment_p01_integrated.dxf")
     exterior_polys=list(final.modelspace().query("LWPOLYLINE[layer=='EXTERIOR_200']"))
-    overlaps=[]
-    for poly in exterior_polys:
-        points=[(float(x),float(y)) for x,y in poly.get_points("xy")]
-        edges=list(zip(points,points[1:]))
-        if poly.closed: edges.append((points[-1],points[0]))
-        for a,b in edges:
-            if abs(a[1]-200)<.01 and abs(b[1]-200)<.01:
-                low,high=sorted((a[0],b[0]))
-                if min(high,3610)-max(low,3520)>.01:
-                    overlaps.append({"handle":poly.dxf.handle,"start":a,"end":b})
+    residual=[]
+    for label,p1,p2,face in break_specs:
+        hits=[p.dxf.handle for p in exterior_polys if covers_gap(p,p1,p2)]
+        if hits: residual.append({"junction":label,"handles":hits})
     (out/"integrated-break-debug.json").write_text(json.dumps({
-        "break_result":break_result,"overlaps":overlaps,
+        "break_records":break_records,"residual_gaps":residual,
         "exterior_handles":[p.dxf.handle for p in exterior_polys]
     },indent=2),encoding="utf-8")
-    assert not overlaps,f"Host wall still crosses P01 junction: {overlaps}"
+    assert not residual,f"Unbroken junctions: {residual}"
     partitions=list(final.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']"))
     assert len(partitions)==3 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
     p01_lines=list(final.modelspace().query("LINE[layer=='P01_JUNCTION_90']"))
@@ -216,13 +249,13 @@ try:
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
         "l_walls":wall_records,"straight_partitions":2,
         "closed_partition_objects":len(partitions),
-        "p01_junction_edges":len(p01_lines),"host_wall_break":break_result,"p01_trim_results":trim_results,
+        "p01_junction_edges":len(p01_lines),"host_wall_breaks":break_records,"p01_trim_results":trim_results,
         "dimensions":6,"dimension_scale":"1:50",
         "sockets":3,"socket_block":socket_name,
         "dimension_chain_mm":[3520,90,4772],
         "dimension_warning":"Draft geometry differs from source survey 3565/100/4717",
         "junctions_prepared":junctions,
-        "junction_status":"P01 edges TRIMmed and host wall BREAK verified; other junctions remain",
+        "junction_status":"All five host wall gaps BREAK verified; remaining partition end caps not yet removed",
         "notes":"P01 is three LINE edges, not closed LWPOLYLINE. Other junctions remain unfinished; wall axes approximate."
     },indent=2),encoding="utf-8")
     print("PASS: integrated P01 trim, face-based dimension, other walls and sockets preserved")
