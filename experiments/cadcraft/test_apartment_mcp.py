@@ -74,6 +74,21 @@ try:
         handles_by_layer[layer] = []
         for start, end in segments:
             handles_by_layer[layer].append(handle(execute("line", {"points":[start,end]})))
+    # True CAD dimension entities, rather than drawn text.
+    dimensions = [
+        ("main_width", [0,4775], [8382,4775], [4191,5400], 8382),
+        ("main_height", [0,0], [0,4775], [-650,2387.5], 4775),
+        ("lower_left", [0,0], [3565,0], [1782.5,-500], 3565),
+        # The 4717 chain starts at x=3665, leaving a 100 mm discrepancy.
+        ("lower_right", [3665,0], [8382,0], [6023.5,-900], 4717),
+        ("terrace_width", [8382,0], [14652,0], [11517,-500], 6270),
+        ("terrace_height", [14652,0], [14652,2355], [15200,1177.5], 2355),
+    ]
+    execute("layer.new", {"name":"DIMENSIONS", "current":True})
+    dimension_results = []
+    for name, p1, p2, at, expected in dimensions:
+        result = execute("dimlinear", {"p1":p1,"p2":p2,"at":at})
+        dimension_results.append({"name":name,"expected_mm":expected,"response":result})
     summary = tool("inspect_drawing", {"entities":False})
     tool("save", {"path":str(out / "apartment_mcp_draft.dxf")})
     tool("save", {"path":str(out / "apartment_mcp_draft.png")})
@@ -83,13 +98,14 @@ try:
     expected = sum(map(len, geometry.values()))
     assert len(lines) == expected, (len(lines), expected)
     assert (out / "apartment_mcp_draft.png").stat().st_size > 0
-    for layer in geometry:
+    for layer in [*geometry, "DIMENSIONS"]:
         assert layer in saved.layers
+    assert len(saved.modelspace().query("DIMENSION")) == len(dimensions)
     (out / "apartment-mcp-report.json").write_text(json.dumps({
         "status":"PASS", "units":"mm", "main_size":[8382,4775],
         "terrace_size":[6270,2355], "lines":len(lines),
         "layers":list(geometry), "uncertainty":"Interior partitions are approximate",
-        "handles":handles_by_layer, "inspection":summary,
+        "handles":handles_by_layer, "dimensions":dimension_results, "inspection":summary,
     }, indent=2), encoding="utf-8")
     print(f"PASS: apartment CADCraft MCP generated {len(lines)} lines, DXF and PNG")
 finally:
