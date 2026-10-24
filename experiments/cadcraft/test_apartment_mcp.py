@@ -68,40 +68,27 @@ try:
             [[14652,2355],[8382,2355]],
         ],
     }
-    handles_by_layer = {"OUTER_WALL_FACES":[], "PARTITION_FACES":[]}
+    # Native CADCraft MLINE wall entities: two edges at +/- half of scale.
+    # The original reference coordinates are treated as centre lines in this test.
+    thickness_mm = {"OUTER_WALLS":200, "PARTITIONS_ESTIMATED":90}
+    handles_by_layer = {}
+    wall_handles = []
+    for style_name, thickness in [("WALL_200",200),("PARTITION_90",90)]:
+        execute("mlstyle", {"name":style_name,
+            "elements":[{"offset":-0.5},{"offset":0.5}],
+            "joints":True,"current":False})
     for layer, segments in geometry.items():
         execute("layer.new", {"name":layer, "current":True})
         handles_by_layer[layer] = []
         for start, end in segments:
-            handles_by_layer[layer].append(handle(execute("line", {"points":[start,end]})))
-    # Wall thicknesses: outer segments are exterior faces; inner faces offset 200 mm.
-    # Internal partition segments are nominal centrelines, with faces +/-45 mm.
-    # This is an early geometric test: intersections, end caps and openings
-    # are not yet resolved into watertight wall polygons.
-    from math import hypot
-    thickness_mm = {"OUTER_WALLS":200, "PARTITIONS_ESTIMATED":90}
-    wall_faces = []
-    def draw_wall_face(layer, start, end, offset):
-        dx, dy = end[0]-start[0], end[1]-start[1]
-        length = hypot(dx,dy)
-        assert length > 0
-        nx, ny = -dy/length, dx/length
-        p1 = [start[0]+offset*nx, start[1]+offset*ny]
-        p2 = [end[0]+offset*nx, end[1]+offset*ny]
-        face_handle = handle(execute("line", {"points":[p1,p2]}))
-        handles_by_layer[layer].append(face_handle)
-        return {"start":p1, "end":p2, "handle":face_handle}
-    # Inward offsets, using the orientation of the existing exterior edges.
-    outer_offsets = [200,-200,-200,200]
-    execute("layer.new", {"name":"OUTER_WALL_FACES", "current":True})
-    for (a,b), offset in zip(geometry["OUTER_WALLS"],outer_offsets):
-        wall_faces.append({"class":"outer", "thickness":200,
-                           "face":draw_wall_face("OUTER_WALL_FACES",a,b,offset)})
-    execute("layer.new", {"name":"PARTITION_FACES", "current":True})
-    for a,b in geometry["PARTITIONS_ESTIMATED"]:
-        for offset in (-45,45):
-            wall_faces.append({"class":"partition", "thickness":90,
-                               "face":draw_wall_face("PARTITION_FACES",a,b,offset)})
+            if layer == "TERRACE":
+                result = execute("line", {"points":[start,end]})
+            else:
+                style, width = (("WALL_200",200) if layer=="OUTER_WALLS" else ("PARTITION_90",90))
+                result = execute("mline", {"points":[start,end], "style":style,
+                    "scale":width, "justification":"zero"})
+                wall_handles.append(handle(result))
+            handles_by_layer[layer].append(handle(result))
     # Non-annotative architectural dimension profile for a 1:50 paper scale.
     # Paper text/arrow 2.5 mm => 125 drawing mm at 1:50.
     dimension_vars = {"DIMSCALE":50, "DIMTXT":2.5, "DIMASZ":2.5, "DIMGAP":1.0}
@@ -164,12 +151,13 @@ try:
     import ezdxf
     saved = ezdxf.readfile(out / "apartment_mcp_draft.dxf")
     lines = list(saved.modelspace().query("LINE"))
-    expected = sum(map(len, geometry.values())) + len(wall_faces)
+    expected = len(geometry["TERRACE"])
     assert len(lines) == expected, (len(lines), expected)
     image_bytes = (out / "apartment_mcp_draft.png").read_bytes()
     assert image_bytes.startswith(bytes.fromhex("89504e470d0a1a0a")), "Plot did not produce PNG"
-    for layer in [*geometry, "OUTER_WALL_FACES", "PARTITION_FACES", "DIMENSIONS"]:
+    for layer in [*geometry, "DIMENSIONS"]:
         assert layer in saved.layers
+    assert len(saved.modelspace().query("MLINE")) == len(wall_handles)
     assert len(saved.modelspace().query("DIMENSION")) == len(dimensions)
     assert len(saved.modelspace().query("INSERT")) == 3
     assert "EU_DOUBLE_SOCKET_2PE_1_50" in saved.blocks
@@ -177,7 +165,7 @@ try:
         "status":"PASS", "units":"mm", "main_size":[8382,4775],
         "terrace_size":[6270,2355], "lines":len(lines),
         "layers":list(geometry), "dimension_profile":dimension_vars, "print_scale":"1:50", "uncertainty":"Interior partitions are approximate",
-        "handles":handles_by_layer, "wall_thickness_mm":thickness_mm, "wall_faces":wall_faces, "wall_geometry_status":"draft offsets, junctions/openings unresolved", "dimensions":dimension_results, "inspection":summary,
+        "handles":handles_by_layer, "wall_thickness_mm":thickness_mm, "wall_mline_handles":wall_handles, "wall_geometry_status":"native MLINE; junctions/openings unresolved; reference axes are centerlines", "dimensions":dimension_results, "inspection":summary,
     }, indent=2), encoding="utf-8")
     print(f"PASS: apartment CADCraft MCP generated {len(lines)} lines, DXF and PNG")
 finally:
