@@ -70,8 +70,7 @@ try:
     }
     handles_by_layer = {}
     for layer, segments in geometry.items():
-        execute("layer.new", {"name":layer})
-        execute("layer.set", {"name":layer})
+        execute("layer.new", {"name":layer, "current":True})
         handles_by_layer[layer] = []
         for start, end in segments:
             handles_by_layer[layer].append(handle(execute("line", {"points":[start,end]})))
