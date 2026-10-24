@@ -98,16 +98,18 @@ try:
     # Not claimed to be an exact IEC 60617 glyph.
     # Graphic width 6 mm on paper => 300 mm in model at 1:50.
     execute("layer.new", {"name":"ELECTRICAL_SOCKET", "current":True})
+    # Semicircular project-legend socket symbol: 6 mm wide on paper at 1:50.
+    # Local baseline is on the wall, semicircle projects toward the room.
     symbol_handles = [
-        handle(execute("circle", {"center":[0,100], "radius":110})),
-        handle(execute("line", {"points":[[-70,45],[70,45]]})),
-        handle(execute("line", {"points":[[-70,75],[70,75]]})),
-        handle(execute("line", {"points":[[-110,0],[110,0]]})),
+        handle(execute("arc", {"center":[0,0], "radius":150, "start":0, "end":180})),
+        handle(execute("line", {"points":[[-150,0],[150,0]]})),
+        handle(execute("line", {"points":[[-45,0],[-45,110]]})),
+        handle(execute("line", {"points":[[45,0],[45,110]]})),
     ]
     socket_block = execute("block", {
         "name":"EU_DOUBLE_SOCKET_2PE_1_50", "base":[0,0],
         "handles":symbol_handles, "keep":"delete",
-        "description":"Project-legend double 2P+E socket, concealed installation, 1:50",
+        "description":"Semicircular double socket project symbol, concealed installation, 1:50",
     })
     assert socket_block.get("block") == "EU_DOUBLE_SOCKET_2PE_1_50"
     # Anchor coordinates reference the provisional single-line walls in this draft.
@@ -122,7 +124,7 @@ try:
         socket["handle"] = handle(inserted)
     (out / "apartment-socket-anchors.json").write_text(json.dumps({
         "standard_family":"IEC / European project legend",
-        "symbol_standard_status":"provisional, verify against selected national convention",
+        "symbol_standard_status":"semicircular project symbol; not certified IEC 60617 artwork",
         "installation":"concealed", "socket":"double 2P+E", "print_scale":"1:50",
         "anchors":sockets, "dynamic_wall_following":False
     },indent=2),encoding="utf-8")
