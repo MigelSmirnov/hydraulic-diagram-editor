@@ -1,0 +1,49 @@
+name: CADCraft Linux smoke experiment
+on:
+  workflow_dispatch:
+  push:
+    branches: [experiment/cadcraft-integration]
+    paths:
+      - ".github/workflows/cadcraft-smoke.yml"
+      - "experiments/cadcraft/**"
+permissions:
+  contents: read
+jobs:
+  smoke:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/checkout@v4
+        with:
+          repository: storytold/cadcraft
+          path: _cadcraft
+          # Pin a reviewed commit SHA before promoting beyond this experiment.
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: _cadcraft
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Generate fixture
+        run: |
+          python -m pip install "ezdxf==1.4.3"
+          python experiments/cadcraft/generate_fixture.py
+      - name: Build CADCraft CLI
+        working-directory: _cadcraft
+        run: cargo build --release -p cadcraft-cli
+      - name: Read and render DXF with CADCraft
+        run: |
+          _cadcraft/target/release/cadcraft-cli info cadcraft-test-output/pump_demo.dxf | tee cadcraft-test-output/cadcraft-info.txt
+          _cadcraft/target/release/cadcraft-cli convert cadcraft-test-output/pump_demo.dxf cadcraft-test-output/pump_demo.png
+          test -s cadcraft-test-output/pump_demo.png
+      - name: Run upstream MCP tests
+        working-directory: _cadcraft
+        run: cargo test -p cadcraft-mcp
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadcraft-smoke-results
+          path: cadcraft-test-output/
+          if-no-files-found: warn
