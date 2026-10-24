@@ -96,13 +96,14 @@ try:
         dimension_results.append({"name":name,"expected_mm":expected,"response":result})
     summary = tool("inspect_drawing", {"entities":False})
     tool("save", {"path":str(out / "apartment_mcp_draft.dxf")})
-    execute("plot", {"path":str(out / "apartment_mcp_draft.png"), "layout":"Model", "paper":"A3", "landscape":True, "fit":True, "plotArea":"extents"})
+    execute("plot", {"path":str(out / "apartment_mcp_draft.png"), "layout":"Model", "paper":"A3", "landscape":True, "fit":True, "plotArea":"extents", "output":"png"})
     import ezdxf
     saved = ezdxf.readfile(out / "apartment_mcp_draft.dxf")
     lines = list(saved.modelspace().query("LINE"))
     expected = sum(map(len, geometry.values()))
     assert len(lines) == expected, (len(lines), expected)
-    assert (out / "apartment_mcp_draft.png").stat().st_size > 0
+    image_bytes = (out / "apartment_mcp_draft.png").read_bytes()
+    assert image_bytes.startswith(bytes.fromhex("89504e470d0a1a0a")), "Plot did not produce PNG"
     for layer in [*geometry, "DIMENSIONS"]:
         assert layer in saved.layers
     assert len(saved.modelspace().query("DIMENSION")) == len(dimensions)
