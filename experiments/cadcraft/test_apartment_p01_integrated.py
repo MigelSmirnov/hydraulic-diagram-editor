@@ -138,6 +138,27 @@ try:
     for h,pick in [(p01_left,[3520,150]),(p01_right,[3610,150])]:
         trim_results.append(execute("trim",{"handle":h,"pick":pick,"edges":[cutter],"mode":"standard"}))
     execute("erase",{"handles":[cutter]})
+    # Remove four partition end caps using native BREAK on their actual
+    # closed/open LWPOLYLINE entities, rather than redrawing the walls.
+    cap_specs=[
+        ("L_LEFT_SIDE",(200,2555),(200,2645)),
+        ("L_LEFT_TOP",(1605,4575),(1695,4575)),
+        ("L_RIGHT_TOP",(6455,4575),(6545,4575)),
+        ("P02_TOP",(3520,4575),(3610,4575)),
+    ]
+    cap_breaks=[]
+    for label,p1,p2 in cap_specs:
+        tool("save",{"path":str(out/"partition_cap_before.dxf")})
+        stage=ezdxf.readfile(out/"partition_cap_before.dxf")
+        candidates=[p.dxf.handle for p in stage.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']") if covers_gap(p,p1,p2)]
+        assert len(candidates)==1,f"{label}: expected one cap, found {candidates}"
+        result=execute("break",{"handle":candidates[0],"p1":list(p1),"p2":list(p2)})
+        tool("save",{"path":str(out/"partition_cap_after.dxf")})
+        after=ezdxf.readfile(out/"partition_cap_after.dxf")
+        residual=[p.dxf.handle for p in after.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']") if covers_gap(p,p1,p2)]
+        assert not residual,f"{label}: cap remains {residual}"
+        cap_breaks.append({"name":label,"old_handle":candidates[0],"result":result})
+    print("PARTITION_CAP_BREAKS="+json.dumps(cap_breaks),flush=True)
     # Dimension objects for the original measured plan, scale 1:50.
     for name,value in {"DIMSCALE":50,"DIMTXT":2.5,"DIMASZ":2.5,"DIMGAP":1.0}.items():
         execute("setvar",{"name":name,"value":value})
@@ -214,7 +235,9 @@ try:
     },indent=2),encoding="utf-8")
     assert not residual,f"Unbroken junctions: {residual}"
     partitions=list(final.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']"))
-    assert len(partitions)==3 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
+    assert len(partitions)>=3,[(p.dxf.handle,p.closed) for p in partitions]
+    remaining_caps=[label for label,p1,p2 in cap_specs if any(covers_gap(p,p1,p2) for p in partitions)]
+    assert not remaining_caps,f"Partition caps remain: {remaining_caps}"
     p01_lines=list(final.modelspace().query("LINE[layer=='P01_JUNCTION_90']"))
     def is_segment(e,p,q,tol=0.01):
         a=(float(e.dxf.start.x),float(e.dxf.start.y))
@@ -250,13 +273,13 @@ try:
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
         "l_walls":wall_records,"straight_partitions":2,
         "closed_partition_objects":len(partitions),
-        "p01_junction_edges":len(p01_lines),"host_wall_breaks":break_records,"p01_trim_results":trim_results,
+        "p01_junction_edges":len(p01_lines),"host_wall_breaks":break_records,"partition_cap_breaks":cap_breaks,"p01_trim_results":trim_results,
         "dimensions":6,"dimension_scale":"1:50",
         "sockets":3,"socket_block":socket_name,
         "dimension_chain_mm":[3520,90,4772],
         "dimension_warning":"Draft geometry differs from source survey 3565/100/4717",
         "junctions_prepared":junctions,
-        "junction_status":"All five host wall gaps BREAK verified; remaining partition end caps not yet removed",
+        "junction_status":"Five host wall gaps and four partition caps removed by native BREAK",
         "notes":"P01 is three LINE edges, not closed LWPOLYLINE. Other junctions remain unfinished; wall axes approximate."
     },indent=2),encoding="utf-8")
     print("PASS: integrated P01 trim, face-based dimension, other walls and sockets preserved")
