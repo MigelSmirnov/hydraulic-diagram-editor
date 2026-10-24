@@ -96,7 +96,7 @@ try:
         dimension_results.append({"name":name,"expected_mm":expected,"response":result})
     summary = tool("inspect_drawing", {"entities":False})
     tool("save", {"path":str(out / "apartment_mcp_draft.dxf")})
-    tool("save", {"path":str(out / "apartment_mcp_draft.png")})
+    execute("plot", {"path":str(out / "apartment_mcp_draft.png"), "layout":"Model", "paper":"A3", "landscape":True, "fit":True, "plotArea":"extents"})
     import ezdxf
     saved = ezdxf.readfile(out / "apartment_mcp_draft.dxf")
     lines = list(saved.modelspace().query("LINE"))
