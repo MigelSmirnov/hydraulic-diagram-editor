@@ -1,0 +1,25 @@
+{
+  "schema_version": "0.1",
+  "id": "double_socket",
+  "title": "double socket",
+  "status": "tested_with_limitations",
+  "units": "mm",
+  "inputs": [
+    "attachment_point",
+    "rotation_deg",
+    "room_side",
+    "scale"
+  ],
+  "command_sequence": [
+    "arc",
+    "line",
+    "text",
+    "block",
+    "insert"
+  ],
+  "next_recipe": null,
+  "validation_required": true,
+  "stop_on_validation_failure": true,
+  "source": "05-double-socket/recipe.md",
+  "note": "Read recipe.md for exact command arguments and geometry checks; this JSON is an index, not an executable MCP workflow."
+}
