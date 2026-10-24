@@ -65,7 +65,8 @@ try:
     second = execute("insert", {"name":"HYD_CIRCULATION_PUMP","at":[200,0],"scale":1,"rotation":0})
     assert second.get("handle"), second
     pipe = execute("line", {"points":[[74,37],[200,37]]})
-    assert pipe.get("handle"), pipe
+    pipe_handle = handle(pipe)
+    assert pipe_handle, pipe
     summary = tool("inspect_drawing", {"entities":True})
     assert "HYD_CIRCULATION_PUMP" in json.dumps(summary), summary
     blocks = execute("blocks.list", {})
@@ -74,6 +75,11 @@ try:
     tool("save", {"path":str(out / "pump_mcp.png")})
     assert (out / "pump_mcp.dxf").stat().st_size > 0
     assert (out / "pump_mcp.png").stat().st_size > 0
+    import ezdxf
+    saved = ezdxf.readfile(out / "pump_mcp.dxf")
+    assert "HYD_CIRCULATION_PUMP" in saved.blocks
+    assert len(saved.modelspace().query("INSERT")) == 2
+    assert len(saved.modelspace().query("LINE")) == 1
     (out / "mcp-report.json").write_text(json.dumps({
         "result":"PASS", "block":created, "second_insert":second,
         "pipe":pipe, "blocks":blocks, "drawing":summary,
