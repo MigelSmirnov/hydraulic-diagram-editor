@@ -107,7 +107,8 @@ try:
         ("main_width",[0,4775],[8382,4775],[4191,5400],8382),
         ("main_height",[0,0],[0,4775],[-650,2387.5],4775),
         ("left_chain_face",[0,0],[3520,0],[1760,-500],3520),
-        ("right_chain_reference",[3665,0],[8382,0],[6023.5,-900],4717),
+        ("partition_thickness",[3520,0],[3610,0],[3565,-750],90),
+        ("right_chain_face",[3610,0],[8382,0],[5996,-500],4772),
         ("terrace_width",[8382,0],[14652,0],[11517,-500],6270),
         ("terrace_height",[14652,0],[14652,2355],[15200,1177.5],2355),
     ]
@@ -205,8 +206,11 @@ try:
     assert socket_name in final.blocks
     assert len(final.modelspace().query("LWPOLYLINE"))==6
     dimensions=list(final.modelspace().query("DIMENSION"))
-    assert len(dimensions)==6
-    assert any(abs(d.dxf.defpoint2.x)<.01 and abs(d.dxf.defpoint3.x-3520)<.01 for d in dimensions), "P01 dimension is not attached to left face"
+    assert len(dimensions)==7
+    expected_chain=[(0,3520),(3520,3610),(3610,8382)]
+    for x1,x2 in expected_chain:
+        assert any(abs(d.dxf.defpoint2.x-x1)<.01 and abs(d.dxf.defpoint3.x-x2)<.01 for d in dimensions), f"Missing dimension {x1} to {x2}"
+    assert sum(x2-x1 for x1,x2 in expected_chain)==8382
     assert (out/"apartment_p01_integrated.png").read_bytes().startswith(bytes.fromhex("89504e470d0a1a0a"))
     (out/"apartment-p01-integrated-report.json").write_text(json.dumps({
         "status":"PASS","native_commands":"PLINE OFFSET ERASE LINE PEDIT JOIN",
@@ -215,7 +219,8 @@ try:
         "p01_junction_edges":len(p01_lines),"host_wall_break":break_result,"p01_trim_results":trim_results,
         "dimensions":6,"dimension_scale":"1:50",
         "sockets":3,"socket_block":socket_name,
-        "dimension_warning":"P01 left chain now measures 3520 to wall face; right reference 4717 still unresolved",
+        "dimension_chain_mm":[3520,90,4772],
+        "dimension_warning":"Draft geometry differs from source survey 3565/100/4717",
         "junctions_prepared":junctions,
         "junction_status":"P01 edges TRIMmed and host wall BREAK verified; other junctions remain",
         "notes":"P01 is three LINE edges, not closed LWPOLYLINE. Other junctions remain unfinished; wall axes approximate."
