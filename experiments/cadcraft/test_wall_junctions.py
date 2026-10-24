@@ -78,6 +78,8 @@ try:
     shell=exterior.difference(interior)
     combined=unary_union([shell,*polygons])
     assert combined.is_valid and combined.geom_type=="Polygon", combined.geom_type
+    # Remove temporary OFFSET construction entities; only clean wall contours remain visible.
+    execute("erase", {"handles":[outer,inner]})
     # T junctions have no overlapping interior boundary segments after union.
     execute("layer.new", {"name":"WALL_JUNCTIONS_CLEAN", "current":True})
     rings=[combined.exterior,*combined.interiors]
