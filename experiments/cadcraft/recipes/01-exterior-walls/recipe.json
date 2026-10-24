@@ -1,0 +1,21 @@
+{
+  "schema_version": "0.1",
+  "id": "exterior_walls",
+  "title": "exterior walls",
+  "status": "tested",
+  "units": "mm",
+  "inputs": [
+    "outer_vertices",
+    "interior_point",
+    "thickness_mm"
+  ],
+  "command_sequence": [
+    "pline",
+    "offset"
+  ],
+  "next_recipe": "02-l-partition",
+  "validation_required": true,
+  "stop_on_validation_failure": true,
+  "source": "01-exterior-walls/recipe.md",
+  "note": "Read recipe.md for exact command arguments and geometry checks; this JSON is an index, not an executable MCP workflow."
+}
