@@ -1,0 +1,285 @@
+{
+  "schema_version": "0.1",
+  "id": "apartment-walls-cadcraft",
+  "status": "experimental",
+  "description": "Agent-guided architectural CAD workflow with native CADCraft MCP commands",
+  "units": "mm",
+  "defaults": {
+    "outer_wall": 200,
+    "partition": 90,
+    "annotation_scale": 50
+  },
+  "state_machine": {
+    "initial": "outline",
+    "terminal": "review",
+    "on_failure": "blocked",
+    "persist": "per-project checkpoint"
+  },
+  "steps": [
+    {
+      "id": "outline",
+      "title": "Create exterior outline",
+      "commands": [
+        {
+          "name": "pline",
+          "params": {
+            "vertices": "${outer_vertices}",
+            "closed": true
+          }
+        }
+      ],
+      "validation": [
+        "outer polygon closed",
+        "dimensions and units known"
+      ],
+      "next": "outer_offset"
+    },
+    {
+      "id": "outer_offset",
+      "title": "Offset exterior wall inward",
+      "commands": [
+        {
+          "name": "offset",
+          "params": {
+            "handle": "${outline_handle}",
+            "distance": 200,
+            "side": "${interior_point}"
+          }
+        }
+      ],
+      "validation": [
+        "inner offset is inward",
+        "wall thickness 200mm"
+      ],
+      "next": "partition_axes"
+    },
+    {
+      "id": "partition_axes",
+      "title": "Build partition faces",
+      "commands": [
+        {
+          "name": "pline",
+          "params": {
+            "vertices": "${axis_points}",
+            "closed": false
+          }
+        },
+        {
+          "name": "offset",
+          "params": {
+            "handle": "${axis_handle}",
+            "distance": 45,
+            "side": "${left_side}"
+          }
+        },
+        {
+          "name": "offset",
+          "params": {
+            "handle": "${axis_handle}",
+            "distance": 45,
+            "side": "${right_side}"
+          }
+        },
+        {
+          "name": "erase",
+          "params": {
+            "handles": [
+              "${axis_handle}"
+            ]
+          }
+        }
+      ],
+      "validation": [
+        "both faces present",
+        "no construction axis remains"
+      ],
+      "next": "partition_close"
+    },
+    {
+      "id": "partition_close",
+      "title": "Close free ends and join wall",
+      "commands": [
+        {
+          "name": "line",
+          "params": {
+            "points": "${cap_endpoints}"
+          }
+        },
+        {
+          "name": "pedit",
+          "params": {
+            "handle": "${first_face_handle}",
+            "option": "join",
+            "handles2": "${other_face_and_caps}",
+            "fuzz": 0.01,
+            "convert": true
+          }
+        }
+      ],
+      "validation": [
+        "joined wall polyline exists",
+        "wall corners valid"
+      ],
+      "next": "host_break"
+    },
+    {
+      "id": "host_break",
+      "title": "Break host wall at partition junction",
+      "commands": [
+        {
+          "name": "break",
+          "params": {
+            "handle": "${current_host_edge_handle}",
+            "p1": "${junction_left}",
+            "p2": "${junction_right}"
+          }
+        }
+      ],
+      "validation": [
+        "no host edge overlaps junction interval",
+        "outer boundary intact"
+      ],
+      "next": "partition_cap_break"
+    },
+    {
+      "id": "partition_cap_break",
+      "title": "Remove partition end cap",
+      "commands": [
+        {
+          "name": "break",
+          "params": {
+            "handle": "${current_partition_handle}",
+            "p1": "${cap_start}",
+            "p2": "${cap_end}"
+          }
+        }
+      ],
+      "validation": [
+        "no partition cap overlaps host junction",
+        "both side faces reach host wall"
+      ],
+      "next": "dimensions"
+    },
+    {
+      "id": "dimensions",
+      "title": "Dimension verified wall faces",
+      "commands": [
+        {
+          "name": "setvar",
+          "params": {
+            "name": "DIMSCALE",
+            "value": 50
+          }
+        },
+        {
+          "name": "dimlinear",
+          "params": {
+            "p1": "${face_start}",
+            "p2": "${face_end}",
+            "at": "${dimension_location}"
+          }
+        }
+      ],
+      "validation": [
+        "dimension endpoints match actual faces",
+        "dimension chain closes to measured overall width"
+      ],
+      "next": "sockets"
+    },
+    {
+      "id": "sockets",
+      "title": "Place electrical CAD blocks",
+      "commands": [
+        {
+          "name": "block",
+          "params": {
+            "name": "${symbol_name}",
+            "base": [
+              0,
+              0
+            ],
+            "handles": "${symbol_entity_handles}",
+            "keep": "delete"
+          }
+        },
+        {
+          "name": "insert",
+          "params": {
+            "name": "${symbol_name}",
+            "at": "${wall_attachment_point}",
+            "rotation": "${wall_rotation}",
+            "scale": 1
+          }
+        }
+      ],
+      "validation": [
+        "INSERTs present in saved DXF",
+        "rotation and wall side verified"
+      ],
+      "next": "export"
+    },
+    {
+      "id": "export",
+      "title": "Save and render",
+      "commands": [
+        {
+          "name": "save",
+          "params": {
+            "path": "${output_dxf}"
+          }
+        },
+        {
+          "name": "plot",
+          "params": {
+            "path": "${output_png}",
+            "output": "png",
+            "layout": "Model",
+            "paper": "A3",
+            "landscape": true,
+            "fit": true,
+            "plotArea": "extents"
+          }
+        }
+      ],
+      "validation": [
+        "DXF reopens",
+        "PNG signature valid",
+        "visual review required"
+      ],
+      "next": "review"
+    },
+    {
+      "id": "review",
+      "title": "Human/agent acceptance",
+      "commands": [],
+      "validation": [
+        "source plan compared visually",
+        "no unapproved dimensional assumptions",
+        "unresolved junctions reported"
+      ],
+      "next": null
+    }
+  ],
+  "response_contract": {
+    "workflow_id": "string",
+    "run_id": "string",
+    "step_id": "string",
+    "status": "ready|blocked|passed|needs_review",
+    "commands": "array",
+    "evidence": "array",
+    "next_action": {
+      "step_id": "string|null",
+      "instruction": "string",
+      "required_inputs": "array"
+    },
+    "warnings": "array"
+  },
+  "guardrails": [
+    "Do not advance if geometry validation fails",
+    "Re-read DXF after BREAK because handles may change",
+    "Do not silently replace surveyed dimensions with draft geometry",
+    "TRIM on separate LINEs is validated; closed polyline end-cap BREAK integration needs CI/visual confirmation",
+    "No autonomous structural classification from image",
+    "Do not claim a print scale from fit-to-paper alone"
+  ]
+}
