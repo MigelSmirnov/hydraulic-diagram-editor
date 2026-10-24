@@ -38,7 +38,9 @@ jobs:
           _cadcraft/target/release/cadcraft-cli info cadcraft-test-output/pump_demo.dxf | tee cadcraft-test-output/cadcraft-info.txt
           _cadcraft/target/release/cadcraft-cli convert cadcraft-test-output/pump_demo.dxf cadcraft-test-output/pump_demo.png
           test -s cadcraft-test-output/pump_demo.png
-      - name: Generate CAD blocks directly via MCP\n        run: python experiments/cadcraft/test_mcp.py\n      - name: Run upstream MCP tests
+      - name: Generate CAD blocks directly via MCP
+        run: python experiments/cadcraft/test_mcp.py
+      - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
       - uses: actions/upload-artifact@v4
