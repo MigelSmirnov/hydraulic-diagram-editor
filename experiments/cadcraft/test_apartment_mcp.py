@@ -94,6 +94,38 @@ try:
     for name, p1, p2, at, expected in dimensions:
         result = execute("dimlinear", {"p1":p1,"p2":p2,"at":at})
         dimension_results.append({"name":name,"expected_mm":expected,"response":result})
+    # Project legend symbol inspired by European installation-plan conventions.
+    # Not claimed to be an exact IEC 60617 glyph.
+    # Graphic width 6 mm on paper => 300 mm in model at 1:50.
+    execute("layer.new", {"name":"ELECTRICAL_SOCKET", "current":True})
+    symbol_handles = [
+        handle(execute("circle", {"center":[0,100], "radius":110})),
+        handle(execute("line", {"points":[[-70,45],[70,45]]})),
+        handle(execute("line", {"points":[[-70,75],[70,75]]})),
+        handle(execute("line", {"points":[[-110,0],[110,0]]})),
+    ]
+    socket_block = execute("block", {
+        "name":"EU_DOUBLE_SOCKET_2PE_1_50", "base":[0,0],
+        "handles":symbol_handles, "keep":"delete",
+        "description":"Project-legend double 2P+E socket, concealed installation, 1:50",
+    })
+    assert socket_block.get("block") == "EU_DOUBLE_SOCKET_2PE_1_50"
+    # Anchor coordinates reference the provisional single-line walls in this draft.
+    sockets = [
+        {"id":"S01", "wall":"outer_bottom", "at":[1300,0], "rotation":0, "side":"inside"},
+        {"id":"S02", "wall":"outer_left", "at":[0,1800], "rotation":-90, "side":"inside"},
+        {"id":"S03", "wall":"partition_x3565", "at":[3565,1500], "rotation":-90, "side":"left"},
+    ]
+    for socket in sockets:
+        inserted = execute("insert", {"name":"EU_DOUBLE_SOCKET_2PE_1_50",
+                                       "at":socket["at"], "rotation":socket["rotation"], "scale":1})
+        socket["handle"] = handle(inserted)
+    (out / "apartment-socket-anchors.json").write_text(json.dumps({
+        "standard_family":"IEC / European project legend",
+        "symbol_standard_status":"provisional, verify against selected national convention",
+        "installation":"concealed", "socket":"double 2P+E", "print_scale":"1:50",
+        "anchors":sockets, "dynamic_wall_following":False
+    },indent=2),encoding="utf-8")
     summary = tool("inspect_drawing", {"entities":False})
     tool("save", {"path":str(out / "apartment_mcp_draft.dxf")})
     execute("plot", {"path":str(out / "apartment_mcp_draft.png"), "layout":"Model", "paper":"A3", "landscape":True, "fit":True, "plotArea":"extents", "output":"png"})
@@ -107,6 +139,8 @@ try:
     for layer in [*geometry, "DIMENSIONS"]:
         assert layer in saved.layers
     assert len(saved.modelspace().query("DIMENSION")) == len(dimensions)
+    assert len(saved.modelspace().query("INSERT")) == 3
+    assert "EU_DOUBLE_SOCKET_2PE_1_50" in saved.blocks
     (out / "apartment-mcp-report.json").write_text(json.dumps({
         "status":"PASS", "units":"mm", "main_size":[8382,4775],
         "terrace_size":[6270,2355], "lines":len(lines),
