@@ -48,6 +48,10 @@ jobs:
         run: python experiments/cadcraft/test_exterior_offset.py
       - name: Draw closed 90mm apartment partitions via MCP
         run: python experiments/cadcraft/test_closed_partitions.py
+      - name: Install geometry validation library
+        run: python -m pip install "shapely==2.1.2"
+      - name: Test clean wall junctions via CADCraft MCP
+        run: python experiments/cadcraft/test_wall_junctions.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
