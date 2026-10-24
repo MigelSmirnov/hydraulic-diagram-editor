@@ -106,6 +106,7 @@ try:
         handle(execute("line", {"points":[[0,0],[0,290]]})),
         handle(execute("line", {"points":[[-175,150],[175,150]]})),
         handle(execute("line", {"points":[[110,55],[150,135]]})),
+        handle(execute("text", {"at":[175,150], "text":"2", "height":95})),
     ]
     socket_block = execute("block", {
         "name":"EU_DOUBLE_SOCKET_2PE_1_50", "base":[0,0],
