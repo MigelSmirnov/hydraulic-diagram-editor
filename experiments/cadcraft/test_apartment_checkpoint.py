@@ -159,7 +159,15 @@ try:
     partitions=list(final.modelspace().query("LWPOLYLINE[layer=='PARTITIONS_90']"))
     assert len(partitions)==4 and all(p.closed for p in partitions),[(p.dxf.handle,p.closed) for p in partitions]
     assert len(final.modelspace().query("LINE"))==0
-    assert len(final.modelspace().query("INSERT"))==3
+    inserts=list(final.modelspace().query("INSERT"))
+    insert_details=[{"handle":e.dxf.handle,"name":e.dxf.name,
+                     "at":list(e.dxf.insert)[:2]} for e in inserts]
+    print("CHECKPOINT_INSERTS="+json.dumps(insert_details),flush=True)
+    (out/"checkpoint-inserts-debug.json").write_text(json.dumps({
+        "expected":3,"actual":len(inserts),"inserts":insert_details,
+        "block_names":list(final.blocks.block_names())
+    },indent=2),encoding="utf-8")
+    assert len(inserts)==3, f"Expected 3 inserts, found {len(inserts)}: {insert_details}"
     assert socket_name in final.blocks
     assert len(final.modelspace().query("LWPOLYLINE"))==7
     assert len(final.modelspace().query("DIMENSION"))==6
