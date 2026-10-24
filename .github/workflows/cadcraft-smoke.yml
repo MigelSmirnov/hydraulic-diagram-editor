@@ -74,6 +74,28 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: cadcraft-smoke-results
-          path: cadcraft-test-output/
+          name: cadcraft-break-junction
+          path: |
+            cadcraft-test-output/break_before.dxf
+            cadcraft-test-output/break_after.dxf
+            cadcraft-test-output/break_after.png
+            cadcraft-test-output/break-junction-report.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadcraft-apartment-current
+          path: |
+            cadcraft-test-output/apartment_p01_integrated.dxf
+            cadcraft-test-output/apartment_p01_integrated.png
+            cadcraft-test-output/apartment-p01-integrated-report.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadcraft-checkpoint
+          path: |
+            cadcraft-test-output/apartment_checkpoint.dxf
+            cadcraft-test-output/apartment_checkpoint.png
+            cadcraft-test-output/apartment-checkpoint-report.json
           if-no-files-found: warn
