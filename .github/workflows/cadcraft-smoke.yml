@@ -74,6 +74,8 @@ jobs:
         run: python experiments/cadcraft/test_layer_states.py
       - name: Static block library via WBLOCK and INSERT from file
         run: python experiments/cadcraft/test_block_library.py
+      - name: Opaque door and window blocks on uncut walls
+        run: python experiments/cadcraft/test_opaque_openings.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
@@ -116,4 +118,7 @@ jobs:
             cadcraft-test-output/block-library/
             cadcraft-test-output/block_library_apartment.*
             cadcraft-test-output/block-library-report.json
+            cadcraft-test-output/opaque_*.png
+            cadcraft-test-output/opaque_openings.dxf
+            cadcraft-test-output/opaque-openings-report.json
           if-no-files-found: warn

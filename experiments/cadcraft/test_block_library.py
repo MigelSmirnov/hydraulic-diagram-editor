@@ -100,7 +100,7 @@ try:
     assert world_box(left) == [0, 3000, 200, 3900], world_box(left)
 
     report = {"status": "PASS", "library_file": str(path), "inserts": {"OK-2": world_box(bottom), "OK-3": world_box(left)},
-              "note": "Insert does not cut the wall faces: an opening needs BREAK of both faces as a separate step."}
+              "note": "Transparent block: wall faces show through. Openings use the opaque WIPEOUT blocks of test_opaque_openings.py."}
     (out / "block-library-report.json").write_text(json.dumps(report, indent=2), encoding="utf-8")
     print("PASS: window WBLOCK to library file and INSERT from file with attribute")
 finally:
