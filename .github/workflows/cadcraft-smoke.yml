@@ -68,6 +68,12 @@ jobs:
         run: python experiments/cadcraft/test_apartment_p01_integrated.py
       - name: Test native BREAK at exterior wall junction
         run: python experiments/cadcraft/test_break_junction.py
+      - name: Install image inspection library
+        run: python -m pip install "pillow==12.3.0"
+      - name: Layer states on the finished apartment drawing
+        run: python experiments/cadcraft/test_layer_states.py
+      - name: Static block library via WBLOCK and INSERT from file
+        run: python experiments/cadcraft/test_block_library.py
       - name: Run upstream MCP tests
         working-directory: _cadcraft
         run: cargo test -p cadcraft-mcp
@@ -98,4 +104,16 @@ jobs:
             cadcraft-test-output/apartment_checkpoint.dxf
             cadcraft-test-output/apartment_checkpoint.png
             cadcraft-test-output/apartment-checkpoint-report.json
+          if-no-files-found: warn
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: cadcraft-layers-and-blocks
+          path: |
+            cadcraft-test-output/layers_*.png
+            cadcraft-test-output/layers_with_states.dxf
+            cadcraft-test-output/layer-states-report.json
+            cadcraft-test-output/block-library/
+            cadcraft-test-output/block_library_apartment.*
+            cadcraft-test-output/block-library-report.json
           if-no-files-found: warn
