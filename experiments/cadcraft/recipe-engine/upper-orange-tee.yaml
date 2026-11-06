@@ -1,0 +1,15 @@
+id: J-UPPER-ORANGE-LEFT-EXT
+recipe: tee-junction
+host:
+  entity_handle: '5F'
+  layer: EXTERIOR_200
+branch:
+  entity_handle: '5E'
+  layer: BEARING_MARKED_200
+contact:
+  x_range_mm: [4667.0, 4757.0]
+  tolerance_mm: 0.02
+operations:
+  - snap_branch_endpoints_to_host
+  - break_host_face
+  - remove_branch_end_cap
