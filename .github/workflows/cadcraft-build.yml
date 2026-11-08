@@ -29,6 +29,8 @@ jobs:
           python experiments/cadcraft/ci/build_a3.py \
             --geometry checkpoint/experiments/cadcraft/checkpoints/apartment-v35/geometry.json \
             --output dist
+      - name: Make monochrome A3 with one left dimension
+        run: python experiments/cadcraft/ci/black_white_one_dimension.py
       - name: Upload downloadable files
         uses: actions/upload-artifact@v4
         with:
@@ -38,5 +40,6 @@ jobs:
             dist/*.pdf
             dist/*.png
             dist/manifest.json
+            dist/bw_manifest.json
           if-no-files-found: error
           retention-days: 30
