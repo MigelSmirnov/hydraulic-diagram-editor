@@ -1,0 +1,46 @@
+name: CADCraft - sketch plan
+on:
+  workflow_dispatch:
+  push:
+    paths:
+      - '.github/workflows/cadcraft-sketch-plan.yml'
+      - 'experiments/cadcraft/sketch_plan/**'
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - uses: actions/checkout@v4
+      - name: Checkout CADCraft at a pinned commit
+        uses: actions/checkout@v4
+        with:
+          repository: storytold/cadcraft
+          ref: 6f0f1fefa81d08031bde56a8b3d5b1556810f397
+          path: _cadcraft
+      - uses: dtolnay/rust-toolchain@stable
+      - uses: Swatinem/rust-cache@v2
+        with:
+          workspaces: _cadcraft
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - name: Install Python dependencies
+        run: python -m pip install 'ezdxf>=1.3,<2' 'matplotlib>=3.8,<4' 'shapely>=2,<3'
+      - name: Build CADCraft CLI
+        working-directory: _cadcraft
+        run: cargo build --release -p cadcraft-cli
+      - name: Reference drawing with ezdxf
+        run: python experiments/cadcraft/sketch_plan/build_plan.py
+      - name: Draw the plan with CADCraft commands over MCP
+        run: python experiments/cadcraft/sketch_plan/cadcraft_plan.py
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: sketch-plan
+          path: |
+            dist/sketch_plan/
+            dist/sketch_plan_cadcraft/
+          if-no-files-found: warn
+          retention-days: 30
