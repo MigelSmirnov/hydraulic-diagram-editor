@@ -21,7 +21,7 @@
     {"id": "E-niche-top", "layer": "WALLS_EXTERIOR", "rect": [-150, 9840, 930, 9990]},
     {"id": "E-niche-right", "layer": "WALLS_EXTERIOR", "rect": [780, 8770, 930, 9990]},
     {"id": "E-gallery-windows", "layer": "WALLS_EXTERIOR", "rect": [780, 8770, 4160, 8920]},
-    {"id": "E-gallery-right", "layer": "WALLS_EXTERIOR", "rect": [4010, 8110, 4160, 8920]},
+    {"id": "E-gallery-right", "layer": "WALLS_EXTERIOR", "rect": [4010, 8260, 4160, 8920]},
 
     {"id": "F-stub-left", "layer": "WALLS_BEARING", "rect": [0, 8110, 310, 8260]},
     {"id": "F-pier", "layer": "WALLS_BEARING", "rect": [1010, 8110, 1520, 8260]},
@@ -38,7 +38,7 @@
     {"id": "P-right-lower", "layer": "WALLS_PARTITION", "rect": [3820, 2630, 5680, 2710]},
     {"id": "P-right-upper", "layer": "WALLS_PARTITION", "rect": [3820, 5420, 5680, 5500]},
     {"id": "P-hall-screen", "layer": "WALLS_PARTITION", "rect": [3820, 6630, 4820, 6710]},
-    {"id": "P-hall-nib", "layer": "WALLS_PARTITION", "rect": [5470, 6390, 5680, 6440]},
+    {"id": "P-hall-nib", "layer": "WALLS_PARTITION", "rect": [5470, 6387, 5680, 6437]},
     {"id": "P-left-room-side", "layer": "WALLS_PARTITION", "rect": [1180, 5590, 1260, 8110]},
     {"id": "P-left-room-bottom", "layer": "WALLS_PARTITION", "rect": [0, 5590, 1260, 5670]}
   ],
