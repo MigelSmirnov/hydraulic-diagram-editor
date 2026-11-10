@@ -208,7 +208,7 @@ assert abs(ring_area - expected_ring_area) < 100, f"wall outline area {ring_area
 def measured(entity):
     a, b = entity.dxf.defpoint2, entity.dxf.defpoint3
     if entity.dimtype & 7 == 1:  # aligned
-        return math.dist(a[:2], b[:2])
+        return math.hypot(b[0] - a[0], b[1] - a[1])
     angle = math.radians(entity.dxf.get("angle", 0))
     return abs((b[0] - a[0]) * math.cos(angle) + (b[1] - a[1]) * math.sin(angle))
 
