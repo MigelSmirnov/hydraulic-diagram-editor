@@ -1,0 +1,123 @@
+{
+  "schemaVersion": 1,
+  "nodes": [
+    {
+      "id": "node-inlet-flange",
+      "type": "hydraulic",
+      "position": { "x": 80, "y": 180 },
+      "data": { "type": "flange", "label": "Вход", "rotation": 0 }
+    },
+    {
+      "id": "node-pump",
+      "type": "hydraulic",
+      "position": { "x": 220, "y": 180 },
+      "data": { "type": "circulation-pump", "label": "Циркуляционный насос", "rotation": 0 }
+    },
+    {
+      "id": "node-check-valve",
+      "type": "hydraulic",
+      "position": { "x": 360, "y": 180 },
+      "data": { "type": "check-valve", "label": "Обратный клапан", "rotation": 0 }
+    },
+    {
+      "id": "node-three-way",
+      "type": "hydraulic",
+      "position": { "x": 510, "y": 162 },
+      "data": { "type": "three-way-actuated-valve", "label": "Трёхходовой клапан", "rotation": 0 }
+    },
+    {
+      "id": "node-outlet-flange",
+      "type": "hydraulic",
+      "position": { "x": 680, "y": 180 },
+      "data": { "type": "flange", "label": "Выход", "rotation": 0 }
+    },
+    {
+      "id": "node-branch-junction",
+      "type": "hydraulic",
+      "position": { "x": 548, "y": 330 },
+      "data": { "type": "junction", "label": "Ответвление", "rotation": 0 }
+    },
+    {
+      "id": "node-balancing-valve",
+      "type": "hydraulic",
+      "position": { "x": 400, "y": 302 },
+      "data": { "type": "balancing-valve", "label": "Балансировочный вентиль", "rotation": 180 }
+    },
+    {
+      "id": "node-expansion-tank",
+      "type": "hydraulic",
+      "position": { "x": 520, "y": 430 },
+      "data": { "type": "expansion-tank", "label": "Расширительный бак", "rotation": 180 }
+    }
+  ],
+  "edges": [
+    {
+      "id": "edge-inlet-pump",
+      "source": "node-inlet-flange",
+      "sourceHandle": "outlet",
+      "target": "node-pump",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-pump-check",
+      "source": "node-pump",
+      "sourceHandle": "outlet",
+      "target": "node-check-valve",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-check-three-way",
+      "source": "node-check-valve",
+      "sourceHandle": "outlet",
+      "target": "node-three-way",
+      "targetHandle": "left",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-three-way-outlet",
+      "source": "node-three-way",
+      "sourceHandle": "right",
+      "target": "node-outlet-flange",
+      "targetHandle": "inlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_supply" }
+    },
+    {
+      "id": "edge-three-way-branch",
+      "source": "node-three-way",
+      "sourceHandle": "bottom",
+      "target": "node-branch-junction",
+      "targetHandle": "top",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    },
+    {
+      "id": "edge-branch-balancing",
+      "source": "node-branch-junction",
+      "sourceHandle": "left",
+      "target": "node-balancing-valve",
+      "targetHandle": "outlet",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    },
+    {
+      "id": "edge-expansion-branch",
+      "source": "node-expansion-tank",
+      "sourceHandle": "connection",
+      "target": "node-branch-junction",
+      "targetHandle": "bottom",
+      "type": "hydraulic",
+      "data": { "lineType": "pipe_solar_return" }
+    }
+  ],
+  "settings": {
+    "showGrid": false,
+    "snapToGrid": false,
+    "activeLineType": "pipe_solar_supply"
+  }
+}
